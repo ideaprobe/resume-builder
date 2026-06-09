@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { AvatarUpload } from '../components/resume/AvatarUpload'
 import {
   IconCustom,
@@ -27,7 +27,7 @@ import {
   createEmptyWorkItem,
   createId,
   normalizeBasicsFields,
-  resolveGradient,
+  resolveThemeVars,
 } from '../types/resume'
 
 interface DefaultTemplateProps {
@@ -44,13 +44,8 @@ function findSection<T extends ResumeSection['type']>(
     | undefined
 }
 
-function SectionStrip({ index, children }: { index: number; children: ReactNode }) {
-  const isGradient = index % 2 === 0
-  return (
-    <div className={`resume-section-strip${isGradient ? ' resume-section-strip--gradient' : ''}`}>
-      {children}
-    </div>
-  )
+function SectionStrip({ children }: { children: ReactNode }) {
+  return <div className="resume-section-strip">{children}</div>
 }
 
 export function DefaultTemplate({ content, onChange }: DefaultTemplateProps) {
@@ -70,7 +65,7 @@ export function DefaultTemplate({ content, onChange }: DefaultTemplateProps) {
   if (!basics || !work || !education || !skills) return null
 
   const fields = normalizeBasicsFields(basics.fields)
-  const gradient = resolveGradient(content.theme)
+  const themeVars = resolveThemeVars(content.theme)
 
   const setBasic = (key: keyof typeof fields, value: string) => {
     updateSection(basics.id, () => ({
@@ -105,49 +100,52 @@ export function DefaultTemplate({ content, onChange }: DefaultTemplateProps) {
   return (
     <div
       className="resume-canvas resume-sheet w-[210mm] mx-auto"
-      style={{ ['--resume-gradient' as string]: gradient }}
+      style={themeVars as CSSProperties}
     >
       <header className="resume-hero">
-        <AvatarUpload value={fields.avatar} onChange={(v) => setBasic('avatar', v)} />
-        <InlineField
-          value={fields.name}
-          onChange={(v) => setBasic('name', v)}
-          placeholder="你的姓名"
-          className="resume-t-display"
-        />
-        <InlineField
-          value={fields.title}
-          onChange={(v) => setBasic('title', v)}
-          placeholder="职位头衔"
-          className="resume-t-headline"
-        />
-        <div className="resume-t-meta">
-          <MetaItem
-            icon={<IconMail className="resume-meta-icon" />}
-            value={fields.email}
-            onChange={(v) => setBasic('email', v)}
-            placeholder="邮箱"
-          />
-          <MetaItem
-            icon={<IconPhone className="resume-meta-icon" />}
-            value={fields.phone}
-            onChange={(v) => setBasic('phone', v)}
-            placeholder="电话"
-          />
-          <MetaItem
-            icon={<IconLocation className="resume-meta-icon" />}
-            value={fields.location}
-            onChange={(v) => setBasic('location', v)}
-            placeholder="城市"
-          />
+        <div className="resume-hero-bg" aria-hidden />
+        <div className="resume-hero-content">
+          <AvatarUpload value={fields.avatar} onChange={(v) => setBasic('avatar', v)} />
+          <div className="resume-hero-info">
+            <InlineField
+              value={fields.name}
+              onChange={(v) => setBasic('name', v)}
+              placeholder="你的姓名"
+              className="resume-t-display"
+            />
+            <InlineField
+              value={fields.title}
+              onChange={(v) => setBasic('title', v)}
+              placeholder="职位头衔"
+              className="resume-t-headline"
+            />
+            <div className="resume-t-meta">
+              <MetaItem
+                icon={<IconMail className="resume-meta-icon" />}
+                value={fields.email}
+                onChange={(v) => setBasic('email', v)}
+                placeholder="邮箱"
+              />
+              <MetaItem
+                icon={<IconPhone className="resume-meta-icon" />}
+                value={fields.phone}
+                onChange={(v) => setBasic('phone', v)}
+                placeholder="电话"
+              />
+              <MetaItem
+                icon={<IconLocation className="resume-meta-icon" />}
+                value={fields.location}
+                onChange={(v) => setBasic('location', v)}
+                placeholder="城市"
+              />
+            </div>
+          </div>
         </div>
       </header>
 
       <div className="resume-sections">
         {sectionBlocks.map((block, i) => (
-          <SectionStrip key={i} index={i}>
-            {block}
-          </SectionStrip>
+          <SectionStrip key={i}>{block}</SectionStrip>
         ))}
       </div>
     </div>
@@ -415,7 +413,7 @@ function CustomBlock({
             onChange={(v) => onChange({ ...section, title: v })}
             placeholder="区块标题"
             inline
-            className="text-[0.875rem] font-semibold uppercase tracking-wider"
+            className="resume-section-title-input"
           />
         }
         onAdd={() => onChange({ ...section, items: [...section.items, createEmptyCustomItem()] })}

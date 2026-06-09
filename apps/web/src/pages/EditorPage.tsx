@@ -1,12 +1,14 @@
+import '../styles/fonts-resume.css'
 import { useCallback, useEffect, useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { exportResumePdf, fetchResume, updateResume } from '../api/resumes'
 import { Toolbar } from '../components/editor/Toolbar'
+import { SaveFlushProvider } from '../context/SaveFlushContext'
 import { DefaultTemplate } from '../templates/default'
 import { useAutoSave } from '../hooks/useAutoSave'
 import { useEditorStore } from '../store/editorStore'
-import { createEmptyCustomSection, normalizeBasicsFields, resolveGradient } from '../types/resume'
+import { createEmptyCustomSection, normalizeBasicsFields, normalizeTheme } from '../types/resume'
 
 const saveStatusLabel = {
   idle: '',
@@ -17,7 +19,7 @@ const saveStatusLabel = {
 
 export function EditorPage() {
   const { id } = useParams<{ id: string }>()
-  const { title, content, setResume, setTitle, setContent, updateGradient } = useEditorStore()
+  const { title, content, setResume, setTitle, setContent, updateTheme } = useEditorStore()
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['resume', id],
@@ -29,10 +31,7 @@ export function EditorPage() {
     if (data) {
       const normalized = {
         ...data.content,
-        theme: {
-          ...data.content.theme,
-          gradient: resolveGradient(data.content.theme),
-        },
+        theme: normalizeTheme(data.content.theme),
         sections: data.content.sections.map((s) =>
           s.type === 'basics'
             ? { ...s, fields: normalizeBasicsFields(s.fields) }
@@ -56,7 +55,7 @@ export function EditorPage() {
     [id],
   )
 
-  const saveStatus = useAutoSave(savePayload, async (payload) => {
+  const { status: saveStatus, flush } = useAutoSave(savePayload, async (payload) => {
     if (!payload) return
     await saveFn(payload)
   })
@@ -135,11 +134,13 @@ export function EditorPage() {
       <div className="flex flex-1 overflow-hidden">
         <Toolbar
           theme={content.theme}
-          onGradientChange={updateGradient}
+          onThemeChange={updateTheme}
           onAddCustomSection={handleAddCustomSection}
         />
-        <main className="flex-1 overflow-auto py-8 px-4 lg:px-8">
-          <DefaultTemplate content={content} onChange={setContent} />
+        <main className="flex-1 overflow-auto py-10 px-4 lg:px-10 bg-[oklch(94%_0.01_250)]">
+          <SaveFlushProvider flush={flush}>
+            <DefaultTemplate content={content} onChange={setContent} />
+          </SaveFlushProvider>
         </main>
       </div>
     </div>

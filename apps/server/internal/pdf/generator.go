@@ -27,6 +27,10 @@ type resumeData struct {
 type themeData struct {
 	BackgroundColor string `json:"backgroundColor"`
 	Gradient        string `json:"gradient"`
+	Accent          string `json:"accent"`
+	HeroTone        string `json:"heroTone"`
+	HeroText        string `json:"heroText"`
+	HeroTextMuted   string `json:"heroTextMuted"`
 }
 
 type section struct {
@@ -59,7 +63,27 @@ func (g *Generator) Generate(content json.RawMessage) ([]byte, error) {
 		if data.Theme.BackgroundColor != "" {
 			data.Theme.Gradient = data.Theme.BackgroundColor
 		} else {
-			data.Theme.Gradient = "linear-gradient(145deg, #667eea 0%, #764ba2 100%)"
+			data.Theme.Gradient = "linear-gradient(135deg, #4338ca 0%, #6366f1 45%, #7c3aed 100%)"
+		}
+	}
+	if data.Theme.Accent == "" {
+		data.Theme.Accent = "#5b5bd6"
+	}
+	if data.Theme.HeroTone == "" {
+		data.Theme.HeroTone = "light"
+	}
+	if data.Theme.HeroText == "" {
+		if data.Theme.HeroTone == "dark" {
+			data.Theme.HeroText = "#0f172a"
+		} else {
+			data.Theme.HeroText = "#ffffff"
+		}
+	}
+	if data.Theme.HeroTextMuted == "" {
+		if data.Theme.HeroTone == "dark" {
+			data.Theme.HeroTextMuted = "#334155"
+		} else {
+			data.Theme.HeroTextMuted = "#f1f5f9"
 		}
 	}
 

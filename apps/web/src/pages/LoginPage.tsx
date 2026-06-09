@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login } from '../api/auth'
-import { setToken } from '../api/client'
+import { ApiError, setToken } from '../api/client'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -19,8 +19,12 @@ export function LoginPage() {
       const res = await login(username, password)
       setToken(res.token)
       navigate('/')
-    } catch {
-      setError('用户名或密码错误')
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.status === 401 ? '用户名或密码错误' : '服务暂时不可用，请确认后端和数据库已启动')
+      } else {
+        setError('无法连接服务器，请先运行 docker compose up -d 和 pnpm dev:server')
+      }
     } finally {
       setLoading(false)
     }

@@ -1,3 +1,6 @@
+import { useInlineCommit } from '../../hooks/useInlineCommit'
+import { useSaveFlush } from '../../context/SaveFlushContext'
+
 interface InlineTextareaProps {
   value: string
   onChange: (value: string) => void
@@ -13,10 +16,19 @@ export function InlineTextarea({
   className = '',
   rows = 3,
 }: InlineTextareaProps) {
+  const handleKeyDown = useInlineCommit(true)
+  const flushSave = useSaveFlush()
+
+  const commit = () => {
+    flushSave?.()
+  }
+
   return (
     <textarea
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      onKeyDown={handleKeyDown}
+      onBlur={commit}
       placeholder={placeholder}
       rows={rows}
       className={`inline-field inline-field--textarea ${className}`}

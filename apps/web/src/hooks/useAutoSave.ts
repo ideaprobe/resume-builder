@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -10,6 +10,20 @@ export function useAutoSave<T>(
   const [status, setStatus] = useState<SaveStatus>('idle')
   const isFirst = useRef(true)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const dataRef = useRef(data)
+  dataRef.current = data
+
+  const flush = useCallback(async () => {
+    if (dataRef.current == null) return
+    if (timer.current) clearTimeout(timer.current)
+    setStatus('saving')
+    try {
+      await saveFn(dataRef.current)
+      setStatus('saved')
+    } catch {
+      setStatus('error')
+    }
+  }, [saveFn])
 
   useEffect(() => {
     if (data == null) return
@@ -22,20 +36,14 @@ export function useAutoSave<T>(
     if (timer.current) clearTimeout(timer.current)
     setStatus('idle')
 
-    timer.current = setTimeout(async () => {
-      setStatus('saving')
-      try {
-        await saveFn(data)
-        setStatus('saved')
-      } catch {
-        setStatus('error')
-      }
+    timer.current = setTimeout(() => {
+      void flush()
     }, delay)
 
     return () => {
       if (timer.current) clearTimeout(timer.current)
     }
-  }, [data, saveFn, delay])
+  }, [data, delay, flush])
 
-  return status
+  return { status, flush }
 }

@@ -51,7 +51,11 @@ func DefaultResumeContent() json.RawMessage {
 	content := map[string]any{
 		"template": "default",
 		"theme": map[string]string{
-			"gradient": "linear-gradient(145deg, #667eea 0%, #764ba2 100%)",
+			"gradient":      "linear-gradient(135deg, #4338ca 0%, #6366f1 45%, #7c3aed 100%)",
+			"accent":        "#5b5bd6",
+			"heroTone":      "light",
+			"heroText":      "#ffffff",
+			"heroTextMuted": "#e0e7ff",
 		},
 		"sections": []any{
 			map[string]any{

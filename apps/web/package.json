@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@callmebill/lxgw-wenkai-web": "^1.522.0",
+    "@fontsource/noto-sans-sc": "^5.2.9",
     "@tanstack/react-query": "^5.101.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { ResumeContent, ResumeSection } from '../types/resume'
+import type { ResumeContent, ResumeSection, ResumeTheme } from '../types/resume'
 
 interface EditorState {
   resumeId: string | null
@@ -10,6 +10,7 @@ interface EditorState {
   setContent: (content: ResumeContent) => void
   updateSections: (sections: ResumeSection[]) => void
   updateGradient: (gradient: string) => void
+  updateTheme: (theme: ResumeTheme) => void
 }
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -28,5 +29,9 @@ export const useEditorStore = create<EditorState>((set) => ({
       content: s.content
         ? { ...s.content, theme: { ...s.content.theme, gradient } }
         : null,
+    })),
+  updateTheme: (theme) =>
+    set((s) => ({
+      content: s.content ? { ...s.content, theme: { ...s.content.theme, ...theme } } : null,
     })),
 }))

@@ -1,85 +1,119 @@
-/* 白底 · 奇数条带渐变(1/3/5/7…) · 项目无独立背景 */
+/* 简历画布 — 顶部渐变页眉 + 白底分区 */
 
 .resume-canvas {
-  --r-text: #1a1a2e;
-  --r-text-secondary: #4a4a68;
-  --r-text-muted: #8888a4;
-  --r-text-caption: #a8a8bc;
-  --r-accent: #667eea;
-  --r-accent-soft: rgba(102, 126, 234, 0.12);
-  --r-hover: rgba(102, 126, 234, 0.06);
-  --r-focus: rgba(102, 126, 234, 0.14);
+  --r-text: #1e1e2f;
+  --r-text-secondary: #4b4b63;
+  --r-text-muted: #7a7a94;
+  --r-text-caption: #a0a0b8;
+  --r-accent: #5b5bd6;
+  --r-accent-soft: rgba(91, 91, 214, 0.1);
+  --r-accent-border: rgba(91, 91, 214, 0.24);
+  --r-hover: rgba(91, 91, 214, 0.06);
+  --r-focus: rgba(91, 91, 214, 0.12);
   --r-on-gradient: #ffffff;
-  --r-on-gradient-muted: rgba(255, 255, 255, 0.85);
-  --r-on-gradient-soft: rgba(255, 255, 255, 0.22);
+  --r-on-gradient-muted: rgba(255, 255, 255, 0.9);
+  --r-on-gradient-soft: rgba(255, 255, 255, 0.2);
+  --r-divider: #ececf2;
+  --r-surface: #f8f8fc;
 
-  font-family: "Noto Sans SC", "PingFang SC", -apple-system, sans-serif;
-  font-size: 13px;
+  font-family: var(--font-resume);
+  font-size: 14px;
   line-height: 1.75;
   color: var(--r-text);
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "kern" 1;
 }
 
 .resume-canvas .inline-field:hover {
   background: var(--r-hover);
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .resume-canvas .inline-field:focus {
   background: var(--r-focus);
-  box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.35);
-  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(91, 110, 234, 0.3);
+  border-radius: 4px;
 }
 
 .resume-canvas .inline-field::placeholder {
-  opacity: 0.72;
+  opacity: 0.65;
   color: var(--r-text-muted);
 }
 
 /* 白色简历页 */
 .resume-sheet {
   min-height: 297mm;
-  padding: 2.75rem 2.5rem 3rem;
+  padding: 0 0 2.5rem;
   background: #ffffff;
-  border-radius: 4px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 8px 32px rgba(30, 30, 47, 0.1);
+  overflow: hidden;
 }
 
-/* ── 页眉 ── */
+/* ── 页眉：渐变横幅 + 横向布局 ── */
 .resume-hero {
+  position: relative;
+  padding: 2.25rem 2.75rem 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.resume-hero-bg {
+  position: absolute;
+  inset: 0;
+  background: var(--resume-gradient);
+}
+
+.resume-hero-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(
+    --r-hero-overlay,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.12) 55%, rgba(255, 255, 255, 0.08) 100%)
+  );
+}
+
+.resume-hero-content {
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
-  padding-bottom: 2rem;
+  gap: 2rem;
+}
+
+.resume-hero-info {
+  flex: 1;
+  min-width: 0;
+  color: var(--r-on-gradient-muted);
+  text-shadow: var(--r-on-gradient-shadow, none);
 }
 
 .resume-avatar-wrap {
   position: relative;
-  margin-bottom: 1.25rem;
+  flex-shrink: 0;
 }
 
 .resume-avatar {
-  width: 108px;
-  height: 108px;
+  width: 112px;
+  height: 112px;
   border-radius: 50%;
-  border: 3px solid #fff;
-  outline: 3px solid var(--r-accent);
-  outline-offset: 2px;
+  border: 3px solid rgba(255, 255, 255, 0.95);
   overflow: hidden;
-  background: linear-gradient(135deg, #f0f0f8 0%, #e8e8f4 100%);
+  background: rgba(255, 255, 255, 0.35);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
 }
 
 .resume-avatar:hover {
-  transform: scale(1.03);
-  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.35);
+  transform: scale(1.02);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.16);
 }
 
 .resume-avatar-img {
@@ -93,7 +127,7 @@
   flex-direction: column;
   align-items: center;
   gap: 0.35rem;
-  color: var(--r-text-muted);
+  color: var(--r-on-gradient-muted);
   font-size: 0.75rem;
   letter-spacing: 0.04em;
 }
@@ -104,7 +138,7 @@
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.75rem;
-  color: var(--r-text-muted);
+  color: var(--r-on-gradient-muted);
   background: none;
   border: none;
   cursor: pointer;
@@ -112,32 +146,36 @@
 }
 
 .resume-avatar-remove:hover {
-  color: var(--r-accent);
+  color: var(--r-on-gradient);
 }
 
 .resume-t-display {
-  font-size: 2.125rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.15;
-  color: var(--r-text);
+  font-family: var(--font-resume-medium);
+  font-size: 2.25rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.25;
 }
 
 .resume-t-headline {
-  margin-top: 0.45rem;
-  font-size: 0.9375rem;
+  margin-top: 0.35rem;
+  font-size: 1rem;
   font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--r-accent);
+  letter-spacing: 0.04em;
+}
+
+/* 覆盖 .inline-field { color: inherit }，默认态与联系方式同色 */
+.resume-hero .inline-field.resume-t-display,
+.resume-hero .inline-field.resume-t-headline {
+  color: var(--r-on-gradient-muted);
+  text-shadow: var(--r-on-gradient-shadow, none);
 }
 
 .resume-t-meta {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem 1.5rem;
-  margin-top: 1.15rem;
+  gap: 0.5rem 0.75rem;
+  margin-top: 1rem;
 }
 
 .resume-meta-item {
@@ -146,80 +184,55 @@
   gap: 0.4rem;
   font-size: 0.8125rem;
   font-weight: 400;
-  color: var(--r-text-muted);
+  color: var(--r-on-gradient-muted);
+  padding: 0.3rem 0.75rem;
+  background: var(--r-on-gradient-pill, var(--r-on-gradient-soft));
+  border: 1px solid var(--r-on-gradient-pill-border, transparent);
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+  text-shadow: var(--r-on-gradient-shadow, none);
+  box-shadow: var(--r-pill-shadow, 0 1px 2px rgba(15, 23, 42, 0.06));
 }
 
 .resume-meta-icon {
-  color: var(--r-accent);
-  opacity: 0.75;
+  color: var(--r-meta-icon-color, var(--r-on-gradient-muted));
+  opacity: 1;
   flex-shrink: 0;
 }
 
-/* ── 交替条带：第 1/3/5/7… 项底衬渐变，其余白底 ── */
-.resume-sections {
-  margin-left: -2.5rem;
-  margin-right: -2.5rem;
+/* 渐变页眉上的编辑态 */
+.resume-hero .inline-field:hover {
+  background: var(--r-edit-hover, rgba(255, 255, 255, 0.55));
 }
 
-.resume-section-strip {
-  padding: 1.35rem 2.5rem;
+.resume-hero .inline-field:focus,
+.resume-hero .inline-field.resume-t-display:focus,
+.resume-hero .inline-field.resume-t-headline:focus {
+  background: var(--r-edit-focus, rgba(255, 255, 255, 0.82));
+  box-shadow: 0 0 0 1px var(--r-edit-focus-ring, rgba(15, 23, 42, 0.12));
+  color: var(--r-on-gradient-muted);
 }
 
-.resume-section-strip--gradient {
-  background: var(--resume-gradient);
-}
-
-/* 渐变条带上的文字 */
-.resume-section-strip--gradient .inline-field:hover {
-  background: var(--r-on-gradient-soft);
-}
-
-.resume-section-strip--gradient .inline-field:focus {
-  background: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.45);
-}
-
-.resume-section-strip--gradient .inline-field::placeholder {
+.resume-hero .inline-field::placeholder {
   color: var(--r-on-gradient-muted);
   opacity: 0.85;
 }
 
-.resume-section-strip--gradient .resume-section-title,
-.resume-section-strip--gradient .resume-t-item-primary {
-  color: var(--r-on-gradient);
+/* ── 内容分区 ── */
+.resume-sections {
+  padding: 0 2.75rem;
 }
 
-.resume-section-strip--gradient .resume-t-item-secondary,
-.resume-section-strip--gradient .resume-t-item-body,
-.resume-section-strip--gradient .resume-t-caption,
-.resume-section-strip--gradient .resume-t-caption-sep,
-.resume-section-strip--gradient .resume-empty-hint,
-.resume-section-strip--gradient .resume-add-btn,
-.resume-section-strip--gradient .resume-editor-btn {
-  color: var(--r-on-gradient-muted);
+.resume-section-strip {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--r-divider);
 }
 
-.resume-section-strip--gradient .resume-add-btn:hover,
-.resume-section-strip--gradient .resume-editor-btn:hover {
-  color: var(--r-on-gradient);
-  background: var(--r-on-gradient-soft);
+.resume-section-strip:last-child {
+  border-bottom: none;
 }
 
-.resume-section-strip--gradient .resume-section-icon {
-  background: var(--r-on-gradient-soft);
-  color: var(--r-on-gradient);
-}
-
-.resume-section-strip--gradient .resume-skill-tag {
-  background: var(--r-on-gradient-soft);
-  color: var(--r-on-gradient);
-}
-
-.resume-section-strip--gradient .resume-t-headline {
-  color: rgba(255, 255, 255, 0.95);
-}
-
-/* ── 区块（无自身背景） ── */
+/* ── 区块标题 ── */
 .resume-section {
   margin-bottom: 0;
 }
@@ -227,17 +240,19 @@
 .resume-section-head {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  margin-bottom: 1.15rem;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-left: 0.85rem;
+  border-left: 3px solid var(--r-accent);
 }
 
 .resume-section-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 8px;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 6px;
   background: var(--r-accent-soft);
   color: var(--r-accent);
   flex-shrink: 0;
@@ -245,11 +260,17 @@
 
 .resume-section-title {
   flex: 1;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-family: var(--font-resume-medium);
+  font-size: 0.9375rem;
+  font-weight: 500;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--r-text);
+}
+
+.resume-section-title-input {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
 }
 
 .resume-section-actions {
@@ -258,12 +279,29 @@
   margin-left: auto;
 }
 
+/* ── 经历条目：时间轴 ── */
 .resume-item {
-  margin-bottom: 1.35rem;
+  position: relative;
+  margin-bottom: 1.25rem;
+  padding-left: 1.1rem;
+  margin-left: 0.35rem;
+  border-left: 2px solid var(--r-divider);
 }
 
 .resume-item:last-child {
   margin-bottom: 0;
+}
+
+.resume-item::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: 0.45rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--r-accent);
+  box-shadow: 0 0 0 2px #fff;
 }
 
 .resume-item-top {
@@ -274,64 +312,77 @@
 }
 
 .resume-t-item-primary {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-family: var(--font-resume-medium);
+  font-size: 0.9375rem;
+  font-weight: 500;
   color: var(--r-text);
-  letter-spacing: -0.01em;
+  letter-spacing: 0.02em;
 }
 
 .resume-t-item-secondary {
-  margin-top: 0.2rem;
+  margin-top: 0.15rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--r-text-secondary);
+  color: var(--r-accent);
 }
 
 .resume-t-item-body {
-  margin-top: 0.5rem;
+  margin-top: 0.45rem;
   font-size: 0.8125rem;
   font-weight: 400;
   color: var(--r-text-secondary);
-  line-height: 1.85;
+  line-height: 1.8;
 }
 
 .resume-t-caption {
-  font-size: 0.8125rem;
-  font-weight: 400;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--r-text-muted);
   white-space: nowrap;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.3rem;
+  padding: 0.15rem 0.55rem;
+  background: var(--r-surface);
+  border-radius: 4px;
 }
 
 .resume-t-caption-sep {
   color: var(--r-text-caption);
 }
 
+/* ── 技能标签 ── */
 .resume-skills {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem 0.55rem;
+  gap: 0.5rem 0.6rem;
 }
 
 .resume-skill-tag {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.3rem 0.75rem;
-  background: var(--r-accent-soft);
-  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  background: var(--r-surface);
+  border: 1px solid var(--r-accent-border);
+  border-radius: 6px;
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--r-text-secondary);
+  transition: border-color 0.15s, background 0.15s;
 }
 
+.resume-skill-tag:hover {
+  border-color: var(--r-accent);
+  background: var(--r-accent-soft);
+}
+
+/* ── 编辑操作 ── */
 .resume-editor-bar {
   display: flex;
   gap: 0.25rem;
-  opacity: 0.55;
+  opacity: 0.45;
   transition: opacity 0.15s;
   flex-shrink: 0;
 }
@@ -342,13 +393,13 @@
 }
 
 .resume-editor-btn {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   padding: 0.15rem 0.45rem;
   border: none;
   background: transparent;
   color: var(--r-text-muted);
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .resume-editor-btn:hover {
@@ -361,21 +412,25 @@
 }
 
 .resume-add-btn {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--r-text-muted);
   background: none;
   border: none;
   cursor: pointer;
   letter-spacing: 0.02em;
-  padding: 0.15rem 0;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
 }
 
 .resume-add-btn:hover {
   color: var(--r-accent);
+  background: var(--r-hover);
 }
 
 .resume-empty-hint {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: var(--r-text-muted);
+  padding: 0.5rem 0 0.25rem 1.1rem;
+  margin-left: 0.35rem;
 }
