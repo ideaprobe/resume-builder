@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+:root {
+  --app-bg: #eceae4;
+  --app-surface: #faf9f6;
+  --app-accent: #9a3412;
+  --app-accent-soft: #fff7ed;
+  --app-text: #1c1917;
+  --app-muted: #78716c;
+  --resume-accent: #9a3412;
+  --resume-sidebar: #1c1917;
+  --resume-sidebar-text: #fafaf9;
+  --resume-sidebar-muted: #a8a29e;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Noto Sans SC", "PingFang SC", sans-serif;
+  background: var(--app-bg);
+  color: var(--app-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 始终可编辑：单击即输入，无需双击切换 */
+.inline-field {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  border-radius: 4px;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.inline-field--inline {
+  display: inline-block;
+  width: auto;
+  min-width: 2.5rem;
+  max-width: 100%;
+  field-sizing: content;
+}
+
+.inline-field--textarea {
+  resize: vertical;
+  min-height: 3.5rem;
+  line-height: 1.65;
+}
+
+.inline-field::placeholder {
+  color: #a8a29e;
+  opacity: 0.75;
+}
+
+.inline-field:hover {
+  background: rgba(154, 52, 18, 0.04);
+}
+
+.inline-field:focus {
+  background: rgba(154, 52, 18, 0.07);
+  box-shadow: 0 0 0 1px rgba(154, 52, 18, 0.22);
+}
+
+.resume-canvas {
+  font-family: "Noto Sans SC", "PingFang SC", sans-serif;
+}
+
+.resume-name {
+  font-family: "Noto Serif SC", "Songti SC", serif;
+}
+
+.resume-section-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--resume-accent);
+}
+
+.resume-sidebar {
+  background-color: var(--resume-sidebar);
+}
+
+.resume-sidebar .inline-field:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.resume-sidebar .inline-field:focus {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.resume-timeline::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: linear-gradient(to bottom, #d6d3d1, transparent);
+}

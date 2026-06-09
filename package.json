@@ -1,0 +1,11 @@
+{
+  "name": "resume-builder",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter @resume-builder/web dev",
+    "dev:web": "pnpm --filter @resume-builder/web dev",
+    "build:web": "pnpm --filter @resume-builder/web build",
+    "dev:server": "cd apps/server && go run ./cmd/server",
+    "build:server": "cd apps/server && go build -o bin/server ./cmd/server"
+  }
+}

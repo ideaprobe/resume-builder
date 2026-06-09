@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Noto Sans SC", "PingFang SC", sans-serif;
+      font-size: 13px;
+      line-height: 1.65;
+      color: #1c1917;
+      background: {{.Theme.BackgroundColor}};
+    }
+    .page { min-height: 297mm; }
+    .header {
+      padding: 48px 48px 32px;
+      border-bottom: 1px solid rgba(120,113,108,0.35);
+    }
+    .name {
+      font-family: "Noto Serif SC", serif;
+      font-size: 36px;
+      font-weight: 600;
+      color: #1c1917;
+      line-height: 1.2;
+    }
+    .title { font-size: 17px; color: #57534e; margin-top: 8px; font-weight: 500; }
+    .accent { margin-top: 20px; width: 56px; height: 2px; background: #9a3412; border-radius: 2px; }
+    .body { display: grid; grid-template-columns: 176px 1fr; min-height: calc(297mm - 140px); }
+    .sidebar {
+      background: #1c1917;
+      color: #fafaf9;
+      padding: 40px 20px;
+    }
+    .sidebar-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #a8a29e;
+      margin-bottom: 16px;
+    }
+    .contact-item { margin-bottom: 16px; }
+    .contact-label { font-size: 9px; color: #a8a29e; margin-bottom: 4px; }
+    .contact-value { font-size: 11px; color: #e7e5e4; word-break: break-all; }
+    .skill-item {
+      display: flex;
+      gap: 6px;
+      align-items: flex-start;
+      margin-bottom: 8px;
+      font-size: 11px;
+      color: #e7e5e4;
+    }
+    .skill-dot { color: #9a3412; font-size: 6px; margin-top: 5px; }
+    .main { padding: 40px; background: rgba(255,255,255,0.5); }
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #9a3412;
+      margin-bottom: 20px;
+      margin-top: 8px;
+    }
+    .section-label:first-child { margin-top: 0; }
+    .timeline { position: relative; padding-left: 24px; }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 8px;
+      bottom: 8px;
+      width: 1px;
+      background: linear-gradient(to bottom, #d6d3d1, transparent);
+    }
+    .timeline-item { position: relative; margin-bottom: 28px; }
+    .timeline-dot {
+      position: absolute;
+      left: -24px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid #9a3412;
+      background: white;
+    }
+    .item-title { font-weight: 600; font-size: 14px; color: #1c1917; }
+    .item-sub { font-size: 12px; color: #78716c; margin-top: 4px; }
+    .item-date { font-size: 11px; color: #a8a29e; margin-top: 4px; }
+    .item-desc { margin-top: 10px; font-size: 12px; color: #57534e; white-space: pre-wrap; line-height: 1.7; }
+    .edu-item { margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    {{range .Sections}}
+      {{if eq .Type "basics"}}
+      <div class="header">
+        <div class="name">{{index .Fields "name"}}</div>
+        <div class="title">{{index .Fields "title"}}</div>
+        <div class="accent"></div>
+      </div>
+      {{end}}
+    {{end}}
+
+    <div class="body">
+      <aside class="sidebar">
+        {{range .Sections}}
+          {{if eq .Type "basics"}}
+          <div class="sidebar-label">联系</div>
+          <div class="contact-item">
+            <div class="contact-label">邮箱</div>
+            <div class="contact-value">{{index .Fields "email"}}</div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-label">电话</div>
+            <div class="contact-value">{{index .Fields "phone"}}</div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-label">城市</div>
+            <div class="contact-value">{{index .Fields "location"}}</div>
+          </div>
+          {{end}}
+        {{end}}
+
+        {{range .Sections}}
+          {{if eq .Type "skills"}}
+          <div style="margin-top:40px">
+            <div class="sidebar-label">技能</div>
+            {{range .Items}}
+            <div class="skill-item">
+              <span class="skill-dot">●</span>
+              <span>{{index . "name"}}</span>
+            </div>
+            {{end}}
+          </div>
+          {{end}}
+        {{end}}
+      </aside>
+
+      <main class="main">
+        {{range .Sections}}
+          {{if eq .Type "work"}}
+          <div class="section-label">工作经历</div>
+          <div class="timeline">
+            {{range .Items}}
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="item-title">{{index . "company"}} / {{index . "position"}}</div>
+              <div class="item-date">{{index . "startDate"}} — {{if index . "endDate"}}{{index . "endDate"}}{{else}}至今{{end}}</div>
+              <div class="item-desc">{{index . "description"}}</div>
+            </div>
+            {{end}}
+          </div>
+          {{else if eq .Type "education"}}
+          <div class="section-label">教育背景</div>
+          {{range .Items}}
+          <div class="edu-item">
+            <div class="item-title">{{index . "school"}} · {{index . "degree"}}</div>
+            <div class="item-date">{{index . "startDate"}} — {{index . "endDate"}}</div>
+          </div>
+          {{end}}
+          {{else if eq .Type "custom"}}
+          <div class="section-label">{{.Title}}</div>
+          {{range .Items}}
+          <div class="item-desc" style="margin-bottom:12px">{{index . "content"}}</div>
+          {{end}}
+          {{end}}
+        {{end}}
+      </main>
+    </div>
+  </div>
+</body>
+</html>
