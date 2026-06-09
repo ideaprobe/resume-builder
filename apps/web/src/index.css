@@ -1,41 +1,56 @@
 @import "tailwindcss";
+@import "./styles/resume.css";
 
-:root {
-  --app-bg: #eceae4;
-  --app-surface: #faf9f6;
-  --app-accent: #9a3412;
-  --app-accent-soft: #fff7ed;
-  --app-text: #1c1917;
-  --app-muted: #78716c;
-  --resume-accent: #9a3412;
-  --resume-sidebar: #1c1917;
-  --resume-sidebar-text: #fafaf9;
-  --resume-sidebar-muted: #a8a29e;
+@plugin "daisyui" {
+  themes: resume --default;
+}
+
+@plugin "daisyui/theme" {
+  name: "resume";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+  --color-base-100: oklch(99% 0.004 250);
+  --color-base-200: oklch(96% 0.008 250);
+  --color-base-300: oklch(91% 0.012 250);
+  --color-base-content: oklch(28% 0.02 250);
+  --color-primary: oklch(48% 0.14 250);
+  --color-primary-content: oklch(99% 0 0);
+  --color-secondary: oklch(72% 0.06 250);
+  --color-secondary-content: oklch(25% 0.02 250);
+  --color-accent: oklch(62% 0.12 200);
+  --color-accent-content: oklch(99% 0 0);
+  --color-neutral: oklch(32% 0.02 250);
+  --color-neutral-content: oklch(96% 0 0);
+  --color-info: oklch(62% 0.12 240);
+  --color-success: oklch(62% 0.12 150);
+  --color-warning: oklch(75% 0.12 80);
+  --color-error: oklch(58% 0.18 25);
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: "Noto Sans SC", "PingFang SC", sans-serif;
-  background: var(--app-bg);
-  color: var(--app-text);
+  font-family: "Noto Sans SC", "PingFang SC", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* 始终可编辑：单击即输入，无需双击切换 */
+/* 单击即编辑 */
 .inline-field {
   display: block;
   width: 100%;
   background: transparent;
   border: none;
   outline: none;
-  padding: 2px 4px;
-  margin: -2px -4px;
+  padding: 2px 6px;
+  margin: -2px -6px;
   font: inherit;
   color: inherit;
   line-height: inherit;
-  letter-spacing: inherit;
-  border-radius: 4px;
+  border-radius: var(--radius-field, 0.5rem);
   transition: background 0.15s, box-shadow 0.15s;
 }
 
@@ -50,58 +65,18 @@ body {
 .inline-field--textarea {
   resize: vertical;
   min-height: 3.5rem;
-  line-height: 1.65;
+  line-height: 1.7;
 }
 
 .inline-field::placeholder {
-  color: #a8a29e;
-  opacity: 0.75;
+  opacity: 0.45;
 }
 
 .inline-field:hover {
-  background: rgba(154, 52, 18, 0.04);
+  background: oklch(48% 0.14 250 / 0.06);
 }
 
 .inline-field:focus {
-  background: rgba(154, 52, 18, 0.07);
-  box-shadow: 0 0 0 1px rgba(154, 52, 18, 0.22);
-}
-
-.resume-canvas {
-  font-family: "Noto Sans SC", "PingFang SC", sans-serif;
-}
-
-.resume-name {
-  font-family: "Noto Serif SC", "Songti SC", serif;
-}
-
-.resume-section-label {
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--resume-accent);
-}
-
-.resume-sidebar {
-  background-color: var(--resume-sidebar);
-}
-
-.resume-sidebar .inline-field:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.resume-sidebar .inline-field:focus {
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
-}
-
-.resume-timeline::before {
-  content: "";
-  position: absolute;
-  left: 5px;
-  top: 8px;
-  bottom: 8px;
-  width: 1px;
-  background: linear-gradient(to bottom, #d6d3d1, transparent);
+  background: oklch(48% 0.14 250 / 0.08);
+  box-shadow: 0 0 0 2px oklch(48% 0.14 250 / 0.25);
 }

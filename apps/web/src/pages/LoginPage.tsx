@@ -27,57 +27,56 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--app-bg)] px-4">
+    <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="resume-name text-3xl font-semibold text-stone-900">Resume</h1>
-          <p className="text-stone-500 mt-2 text-sm">专业简历，所见即所得</p>
+          <div className="badge badge-primary badge-outline mb-4">Resume Builder</div>
+          <h1 className="text-3xl font-bold text-base-content">在线简历编辑器</h1>
+          <p className="text-base-content/60 mt-2">所见即所得 · 一键导出 PDF</p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-(--app-surface) p-8 rounded-2xl shadow-xl shadow-stone-300/30 border border-stone-200/60 space-y-5"
-        >
-          {error && (
-            <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
-          )}
+        <div className="card bg-base-100 shadow-xl">
+          <form onSubmit={handleSubmit} className="card-body gap-4">
+            {error && (
+              <div role="alert" className="alert alert-error alert-soft text-sm">
+                <span>{error}</span>
+              </div>
+            )}
 
-          <div>
-            <label className="block text-xs font-medium tracking-wide uppercase text-stone-500 mb-2">
-              账号
-            </label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full border border-stone-200 rounded-lg px-3 py-2.5 outline-none focus:border-[var(--app-accent)] focus:ring-2 focus:ring-orange-100 bg-white"
-              required
-            />
-          </div>
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">账号</legend>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="input input-bordered w-full"
+                placeholder="请输入账号"
+                required
+              />
+            </fieldset>
 
-          <div>
-            <label className="block text-xs font-medium tracking-wide uppercase text-stone-500 mb-2">
-              密码
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-stone-200 rounded-lg px-3 py-2.5 outline-none focus:border-[var(--app-accent)] focus:ring-2 focus:ring-orange-100 bg-white"
-              required
-            />
-          </div>
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">密码</legend>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input input-bordered w-full"
+                placeholder="请输入密码"
+                required
+              />
+            </fieldset>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-stone-900 text-stone-50 py-2.5 rounded-lg hover:bg-stone-800 disabled:opacity-50 font-medium transition-colors"
-          >
-            {loading ? '登录中...' : '进入编辑器'}
-          </button>
+            <button type="submit" className="btn btn-primary w-full mt-2" disabled={loading}>
+              {loading ? <span className="loading loading-spinner loading-sm" /> : '进入编辑器'}
+            </button>
 
-          <p className="text-xs text-stone-400 text-center">演示账号 demo / demo123</p>
-        </form>
+            <p className="text-center text-xs text-base-content/50">
+              演示账号 <kbd className="kbd kbd-xs">demo</kbd>{' '}
+              <kbd className="kbd kbd-xs">demo123</kbd>
+            </p>
+          </form>
+        </div>
       </div>
     </div>
   )

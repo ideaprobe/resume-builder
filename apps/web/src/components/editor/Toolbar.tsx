@@ -1,54 +1,55 @@
-import { PRESET_COLORS } from '../../types/resume'
+import { PRESET_GRADIENTS, resolveGradient } from '../../types/resume'
+import type { ResumeTheme } from '../../types/resume'
 
 interface ToolbarProps {
-  backgroundColor: string
-  onBackgroundChange: (color: string) => void
+  theme: ResumeTheme
+  onGradientChange: (gradient: string) => void
   onAddCustomSection: () => void
 }
 
-export function Toolbar({
-  backgroundColor,
-  onBackgroundChange,
-  onAddCustomSection,
-}: ToolbarProps) {
+export function Toolbar({ theme, onGradientChange, onAddCustomSection }: ToolbarProps) {
+  const current = resolveGradient(theme)
+
   return (
-    <aside className="w-60 shrink-0 bg-[var(--app-surface)] border-r border-stone-200/80 p-5 space-y-8">
+    <aside className="w-64 shrink-0 bg-base-100 border-r border-base-300 p-5 flex flex-col gap-6">
       <div>
-        <h3 className="text-xs font-semibold tracking-wider uppercase text-stone-500 mb-4">
-          页面背景
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-base-content/50 mb-3">
+          区块渐变
         </h3>
-        <div className="grid grid-cols-5 gap-2.5">
-          {PRESET_COLORS.map((c) => (
+        <div className="grid grid-cols-2 gap-2">
+          {PRESET_GRADIENTS.map((g) => (
             <button
-              key={c.value}
+              key={g.label}
               type="button"
-              title={c.label}
-              onClick={() => onBackgroundChange(c.value)}
-              className={`aspect-square rounded-lg border-2 transition-all hover:scale-105 ${
-                backgroundColor === c.value
-                  ? 'border-[var(--app-accent)] ring-2 ring-orange-200 scale-105'
-                  : 'border-stone-200'
+              title={g.label}
+              onClick={() => onGradientChange(g.gradient)}
+              className={`h-10 rounded-lg border-2 transition-transform hover:scale-[1.02] ${
+                current === g.gradient ? 'border-primary ring-2 ring-primary/30' : 'border-base-300'
               }`}
-              style={{ backgroundColor: c.value }}
-            />
+              style={{ background: g.gradient }}
+            >
+              <span className="sr-only">{g.label}</span>
+            </button>
           ))}
         </div>
+        <p className="text-[0.65rem] text-base-content/45 mt-2">{PRESET_GRADIENTS.find((g) => g.gradient === current)?.label ?? '自定义'}</p>
       </div>
 
+      <div className="divider my-0" />
+
       <div>
-        <h3 className="text-xs font-semibold tracking-wider uppercase text-stone-500 mb-4">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-base-content/50 mb-3">
           内容区块
         </h3>
-        <button
-          type="button"
-          onClick={onAddCustomSection}
-          className="w-full text-sm px-4 py-2.5 rounded-lg bg-stone-900 text-stone-50 hover:bg-stone-800 transition-colors font-medium"
-        >
+        <button type="button" className="btn btn-primary btn-sm w-full" onClick={onAddCustomSection}>
           + 自定义区块
         </button>
-        <p className="text-[0.7rem] text-stone-400 mt-3 leading-relaxed">
-          单击文字即可直接编辑，无需双击
-        </p>
+      </div>
+
+      <div className="mt-auto">
+        <div className="alert alert-info alert-soft text-xs">
+          <span>单击文字编辑 · 点击头像上传照片</span>
+        </div>
       </div>
     </aside>
   )

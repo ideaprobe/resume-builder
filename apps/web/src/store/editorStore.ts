@@ -9,7 +9,7 @@ interface EditorState {
   setTitle: (title: string) => void
   setContent: (content: ResumeContent) => void
   updateSections: (sections: ResumeSection[]) => void
-  updateTheme: (backgroundColor: string) => void
+  updateGradient: (gradient: string) => void
 }
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -23,10 +23,10 @@ export const useEditorStore = create<EditorState>((set) => ({
     set((s) => ({
       content: s.content ? { ...s.content, sections } : null,
     })),
-  updateTheme: (backgroundColor) =>
+  updateGradient: (gradient) =>
     set((s) => ({
       content: s.content
-        ? { ...s.content, theme: { backgroundColor } }
+        ? { ...s.content, theme: { ...s.content.theme, gradient } }
         : null,
     })),
 }))

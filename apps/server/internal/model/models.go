@@ -51,7 +51,7 @@ func DefaultResumeContent() json.RawMessage {
 	content := map[string]any{
 		"template": "default",
 		"theme": map[string]string{
-			"backgroundColor": "#ffffff",
+			"gradient": "linear-gradient(145deg, #667eea 0%, #764ba2 100%)",
 		},
 		"sections": []any{
 			map[string]any{
@@ -63,6 +63,7 @@ func DefaultResumeContent() json.RawMessage {
 					"email":    "email@example.com",
 					"phone":    "手机号",
 					"location": "城市",
+					"avatar":   "",
 				},
 			},
 			map[string]any{

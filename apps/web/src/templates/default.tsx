@@ -1,4 +1,14 @@
 import type { ReactNode } from 'react'
+import { AvatarUpload } from '../components/resume/AvatarUpload'
+import {
+  IconCustom,
+  IconEducation,
+  IconLocation,
+  IconMail,
+  IconPhone,
+  IconSkills,
+  IconWork,
+} from '../components/resume/SectionIcons'
 import { InlineField } from '../components/ui/InlineField'
 import { InlineTextarea } from '../components/ui/InlineTextarea'
 import { ItemActions } from '../components/editor/ItemActions'
@@ -16,6 +26,8 @@ import {
   createEmptySkillItem,
   createEmptyWorkItem,
   createId,
+  normalizeBasicsFields,
+  resolveGradient,
 } from '../types/resume'
 
 interface DefaultTemplateProps {
@@ -30,6 +42,15 @@ function findSection<T extends ResumeSection['type']>(
   return sections.find((s) => s.type === type) as
     | Extract<ResumeSection, { type: T }>
     | undefined
+}
+
+function SectionStrip({ index, children }: { index: number; children: ReactNode }) {
+  const isGradient = index % 2 === 0
+  return (
+    <div className={`resume-section-strip${isGradient ? ' resume-section-strip--gradient' : ''}`}>
+      {children}
+    </div>
+  )
 }
 
 export function DefaultTemplate({ content, onChange }: DefaultTemplateProps) {
@@ -48,164 +69,160 @@ export function DefaultTemplate({ content, onChange }: DefaultTemplateProps) {
 
   if (!basics || !work || !education || !skills) return null
 
+  const fields = normalizeBasicsFields(basics.fields)
+  const gradient = resolveGradient(content.theme)
+
+  const setBasic = (key: keyof typeof fields, value: string) => {
+    updateSection(basics.id, () => ({
+      ...basics,
+      fields: { ...fields, [key]: value },
+    }))
+  }
+
+  const sectionBlocks: ReactNode[] = [
+    <SkillsBlock key="skills" section={skills} onChange={(s) => updateSection(skills.id, () => s)} />,
+    <WorkBlock key="work" section={work} onChange={(s) => updateSection(work.id, () => s)} />,
+    <EducationBlock
+      key="education"
+      section={education}
+      onChange={(s) => updateSection(education.id, () => s)}
+    />,
+    ...customSections.map((section) => (
+      <CustomBlock
+        key={section.id}
+        section={section}
+        onChange={(s) => updateSection(section.id, () => s)}
+        onRemove={() =>
+          onChange({
+            ...content,
+            sections: content.sections.filter((s) => s.id !== section.id),
+          })
+        }
+      />
+    )),
+  ]
+
   return (
     <div
-      className="resume-canvas w-[210mm] min-h-[297mm] mx-auto shadow-2xl shadow-stone-400/25 overflow-hidden"
-      style={{ backgroundColor: content.theme.backgroundColor }}
+      className="resume-canvas resume-sheet w-[210mm] mx-auto"
+      style={{ ['--resume-gradient' as string]: gradient }}
     >
-      {/* 顶栏 */}
-      <header className="px-12 pt-12 pb-8 border-b border-stone-300/60">
+      <header className="resume-hero">
+        <AvatarUpload value={fields.avatar} onChange={(v) => setBasic('avatar', v)} />
         <InlineField
-          value={basics.fields.name}
-          onChange={(v) =>
-            updateSection(basics.id, () => ({
-              ...basics,
-              fields: { ...basics.fields, name: v },
-            }))
-          }
+          value={fields.name}
+          onChange={(v) => setBasic('name', v)}
           placeholder="你的姓名"
-          className="resume-name text-[2.35rem] font-semibold leading-tight text-stone-900 tracking-tight"
+          className="resume-t-display"
         />
         <InlineField
-          value={basics.fields.title}
-          onChange={(v) =>
-            updateSection(basics.id, () => ({
-              ...basics,
-              fields: { ...basics.fields, title: v },
-            }))
-          }
+          value={fields.title}
+          onChange={(v) => setBasic('title', v)}
           placeholder="职位头衔"
-          className="mt-2 text-lg text-stone-600 font-medium"
+          className="resume-t-headline"
         />
-        <div className="mt-5 h-0.5 w-14 bg-[var(--resume-accent)] rounded-full" />
+        <div className="resume-t-meta">
+          <MetaItem
+            icon={<IconMail className="resume-meta-icon" />}
+            value={fields.email}
+            onChange={(v) => setBasic('email', v)}
+            placeholder="邮箱"
+          />
+          <MetaItem
+            icon={<IconPhone className="resume-meta-icon" />}
+            value={fields.phone}
+            onChange={(v) => setBasic('phone', v)}
+            placeholder="电话"
+          />
+          <MetaItem
+            icon={<IconLocation className="resume-meta-icon" />}
+            value={fields.location}
+            onChange={(v) => setBasic('location', v)}
+            placeholder="城市"
+          />
+        </div>
       </header>
 
-      <div className="grid grid-cols-[11rem_1fr] min-h-[calc(297mm-8rem)]">
-        {/* 左侧栏 */}
-        <aside className="resume-sidebar px-5 py-10 text-[var(--resume-sidebar-text)]">
-          <SidebarLabel>联系</SidebarLabel>
-          <ContactItem
-            label="邮箱"
-            value={basics.fields.email}
-            onChange={(v) =>
-              updateSection(basics.id, () => ({
-                ...basics,
-                fields: { ...basics.fields, email: v },
-              }))
-            }
-          />
-          <ContactItem
-            label="电话"
-            value={basics.fields.phone}
-            onChange={(v) =>
-              updateSection(basics.id, () => ({
-                ...basics,
-                fields: { ...basics.fields, phone: v },
-              }))
-            }
-          />
-          <ContactItem
-            label="城市"
-            value={basics.fields.location}
-            onChange={(v) =>
-              updateSection(basics.id, () => ({
-                ...basics,
-                fields: { ...basics.fields, location: v },
-              }))
-            }
-          />
-
-          <div className="mt-10">
-            <SkillsSidebar
-              section={skills}
-              onChange={(s) => updateSection(skills.id, () => s)}
-            />
-          </div>
-        </aside>
-
-        {/* 主内容 */}
-        <main className="px-10 py-10 bg-white/50">
-          <WorkBlock
-            section={work}
-            onChange={(s) => updateSection(work.id, () => s)}
-          />
-          <EducationBlock
-            section={education}
-            onChange={(s) => updateSection(education.id, () => s)}
-          />
-          {customSections.map((section) => (
-            <CustomBlock
-              key={section.id}
-              section={section}
-              onChange={(s) => updateSection(section.id, () => s)}
-              onRemove={() =>
-                onChange({
-                  ...content,
-                  sections: content.sections.filter((s) => s.id !== section.id),
-                })
-              }
-            />
-          ))}
-        </main>
+      <div className="resume-sections">
+        {sectionBlocks.map((block, i) => (
+          <SectionStrip key={i} index={i}>
+            {block}
+          </SectionStrip>
+        ))}
       </div>
     </div>
   )
 }
 
-function SidebarLabel({ children }: { children: ReactNode }) {
-  return (
-    <p className="text-[0.62rem] font-semibold tracking-[0.2em] uppercase text-[var(--resume-sidebar-muted)] mb-4">
-      {children}
-    </p>
-  )
-}
-
-function ContactItem({
-  label,
+function MetaItem({
+  icon,
   value,
   onChange,
+  placeholder,
 }: {
-  label: string
+  icon: ReactNode
   value: string
   onChange: (v: string) => void
+  placeholder: string
 }) {
   return (
-    <div className="mb-4">
-      <p className="text-[0.62rem] text-[var(--resume-sidebar-muted)] mb-1">{label}</p>
-      <InlineField
-        value={value}
-        onChange={onChange}
-        placeholder={label}
-        className="text-[0.8rem] text-stone-200 placeholder:text-stone-500"
-      />
-    </div>
+    <span className="resume-meta-item">
+      {icon}
+      <InlineField value={value} onChange={onChange} placeholder={placeholder} inline />
+    </span>
   )
 }
 
-function SectionTitle({
+function SectionHead({
+  icon,
   title,
   onAdd,
+  extra,
 }: {
-  title: string
+  icon: ReactNode
+  title: ReactNode
   onAdd?: () => void
+  extra?: ReactNode
 }) {
   return (
-    <div className="flex items-center justify-between mb-5 mt-2 first:mt-0">
-      <h2 className="resume-section-label">{title}</h2>
-      {onAdd && (
-        <button
-          type="button"
-          onClick={onAdd}
-          className="text-[0.7rem] font-medium text-[var(--resume-accent)] hover:text-[#7c2d12] px-2 py-1 rounded-md hover:bg-orange-50 transition-colors"
-        >
-          + 添加
-        </button>
-      )}
+    <div className="resume-section-head">
+      <span className="resume-section-icon">{icon}</span>
+      <div className="resume-section-title">{title}</div>
+      <div className="resume-section-actions">
+        {onAdd && (
+          <button type="button" onClick={onAdd} className="resume-add-btn">
+            + 添加
+          </button>
+        )}
+        {extra}
+      </div>
     </div>
   )
 }
 
-function SkillsSidebar({
+function DateRange({
+  start,
+  end,
+  onStart,
+  onEnd,
+  endPlaceholder = '至今',
+}: {
+  start: string
+  end: string
+  onStart: (v: string) => void
+  onEnd: (v: string) => void
+  endPlaceholder?: string
+}) {
+  return (
+    <span className="resume-t-caption">
+      <InlineField value={start} onChange={onStart} placeholder="开始" inline />
+      <span className="resume-t-caption-sep">—</span>
+      <InlineField value={end} onChange={onEnd} placeholder={endPlaceholder} inline />
+    </span>
+  )
+}
+
+function SkillsBlock({
   section,
   onChange,
 }: {
@@ -213,55 +230,40 @@ function SkillsSidebar({
   onChange: (s: SkillsSection) => void
 }) {
   return (
-    <div>
-      <SidebarLabel>技能</SidebarLabel>
-      <button
-        type="button"
-        onClick={() =>
-          onChange({ ...section, items: [...section.items, createEmptySkillItem()] })
-        }
-        className="text-[0.65rem] text-[var(--resume-sidebar-muted)] hover:text-stone-200 mb-3 block"
-      >
-        + 添加技能
-      </button>
-      <ul className="space-y-2">
+    <section className="resume-section">
+      <SectionHead
+        icon={<IconSkills />}
+        title="技能"
+        onAdd={() => onChange({ ...section, items: [...section.items, createEmptySkillItem()] })}
+      />
+      {section.items.length === 0 && <p className="resume-empty-hint">添加技能</p>}
+      <div className="resume-skills">
         {section.items.map((item) => (
-          <li key={item.id} className="group flex items-start gap-1">
-            <span className="text-[var(--resume-accent)] mt-1.5 text-[0.5rem]">●</span>
-            <div className="flex-1 min-w-0">
-              <InlineField
-                value={item.name}
-                onChange={(v) =>
-                  onChange({
-                    ...section,
-                    items: section.items.map((i) =>
-                      i.id === item.id ? { ...i, name: v } : i,
-                    ),
-                  })
-                }
-                placeholder="技能名称"
-                className="text-[0.8rem] text-stone-200 placeholder:text-stone-500"
-              />
-            </div>
-            <ItemActions
-              variant="dark"
-              onCopy={() =>
+          <span key={item.id} className="group resume-skill-tag">
+            <InlineField
+              value={item.name}
+              onChange={(v) =>
                 onChange({
                   ...section,
-                  items: [...section.items, { ...item, id: createId() }],
+                  items: section.items.map((i) => (i.id === item.id ? { ...i, name: v } : i)),
                 })
+              }
+              placeholder="技能"
+              inline
+            />
+            <ItemActions
+              variant="resume"
+              onCopy={() =>
+                onChange({ ...section, items: [...section.items, { ...item, id: createId() }] })
               }
               onDelete={() =>
-                onChange({
-                  ...section,
-                  items: section.items.filter((i) => i.id !== item.id),
-                })
+                onChange({ ...section, items: section.items.filter((i) => i.id !== item.id) })
               }
             />
-          </li>
+          </span>
         ))}
-      </ul>
-    </div>
+      </div>
+    </section>
   )
 }
 
@@ -275,89 +277,60 @@ function WorkBlock({
   const updateItem = (itemId: string, patch: Partial<WorkSection['items'][0]>) => {
     onChange({
       ...section,
-      items: section.items.map((item) =>
-        item.id === itemId ? { ...item, ...patch } : item,
-      ),
+      items: section.items.map((item) => (item.id === itemId ? { ...item, ...patch } : item)),
     })
   }
 
   return (
-    <section className="mb-10">
-      <SectionTitle
+    <section className="resume-section">
+      <SectionHead
+        icon={<IconWork />}
         title="工作经历"
-        onAdd={() =>
-          onChange({ ...section, items: [...section.items, createEmptyWorkItem()] })
-        }
+        onAdd={() => onChange({ ...section, items: [...section.items, createEmptyWorkItem()] })}
       />
-      {section.items.length === 0 && (
-        <p className="text-sm text-stone-400 italic">点击「+ 添加」填写工作经历</p>
-      )}
-      <div className="resume-timeline relative pl-6 space-y-7">
-        {section.items.map((item) => (
-          <div key={item.id} className="group relative">
-            <span className="absolute -left-6 top-1.5 w-2.5 h-2.5 rounded-full border-2 border-[var(--resume-accent)] bg-white" />
-            <div className="flex justify-between items-start gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  <InlineField
-                    value={item.company}
-                    onChange={(v) => updateItem(item.id, { company: v })}
-                    placeholder="公司名称"
-                    inline
-                    className="font-semibold text-stone-900 text-[0.95rem]"
-                  />
-                  <span className="text-stone-300">/</span>
-                  <InlineField
-                    value={item.position}
-                    onChange={(v) => updateItem(item.id, { position: v })}
-                    placeholder="职位"
-                    inline
-                    className="text-stone-600 text-[0.9rem]"
-                  />
-                </div>
-                <div className="flex items-center gap-2 mt-1 text-xs text-stone-500">
-                  <InlineField
-                    value={item.startDate}
-                    onChange={(v) => updateItem(item.id, { startDate: v })}
-                    placeholder="开始"
-                    inline
-                    className="text-xs"
-                  />
-                  <span>—</span>
-                  <InlineField
-                    value={item.endDate}
-                    onChange={(v) => updateItem(item.id, { endDate: v })}
-                    placeholder="至今"
-                    inline
-                    className="text-xs"
-                  />
-                </div>
-              </div>
+      {section.items.length === 0 && <p className="resume-empty-hint">点击「+ 添加」</p>}
+      {section.items.map((item) => (
+        <div key={item.id} className="group resume-item">
+          <div className="resume-item-top">
+            <InlineField
+              value={item.company}
+              onChange={(v) => updateItem(item.id, { company: v })}
+              placeholder="公司"
+              className="resume-t-item-primary flex-1"
+            />
+            <div className="flex items-center gap-1">
+              <DateRange
+                start={item.startDate}
+                end={item.endDate}
+                onStart={(v) => updateItem(item.id, { startDate: v })}
+                onEnd={(v) => updateItem(item.id, { endDate: v })}
+              />
               <ItemActions
+                variant="resume"
                 onCopy={() =>
-                  onChange({
-                    ...section,
-                    items: [...section.items, { ...item, id: createId() }],
-                  })
+                  onChange({ ...section, items: [...section.items, { ...item, id: createId() }] })
                 }
                 onDelete={() =>
-                  onChange({
-                    ...section,
-                    items: section.items.filter((i) => i.id !== item.id),
-                  })
+                  onChange({ ...section, items: section.items.filter((i) => i.id !== item.id) })
                 }
               />
             </div>
-            <InlineTextarea
-              value={item.description}
-              onChange={(v) => updateItem(item.id, { description: v })}
-              placeholder="描述你的职责与成果..."
-              className="mt-2.5 text-[0.85rem] text-stone-600 leading-relaxed"
-              rows={3}
-            />
           </div>
-        ))}
-      </div>
+          <InlineField
+            value={item.position}
+            onChange={(v) => updateItem(item.id, { position: v })}
+            placeholder="职位"
+            className="resume-t-item-secondary"
+          />
+          <InlineTextarea
+            value={item.description}
+            onChange={(v) => updateItem(item.id, { description: v })}
+            placeholder="工作描述..."
+            className="resume-t-item-body"
+            rows={3}
+          />
+        </div>
+      ))}
     </section>
   )
 }
@@ -372,76 +345,53 @@ function EducationBlock({
   const updateItem = (itemId: string, patch: Partial<EducationSection['items'][0]>) => {
     onChange({
       ...section,
-      items: section.items.map((item) =>
-        item.id === itemId ? { ...item, ...patch } : item,
-      ),
+      items: section.items.map((item) => (item.id === itemId ? { ...item, ...patch } : item)),
     })
   }
 
   return (
-    <section className="mb-8">
-      <SectionTitle
+    <section className="resume-section">
+      <SectionHead
+        icon={<IconEducation />}
         title="教育背景"
-        onAdd={() =>
-          onChange({ ...section, items: [...section.items, createEmptyEducationItem()] })
-        }
+        onAdd={() => onChange({ ...section, items: [...section.items, createEmptyEducationItem()] })}
       />
-      <div className="space-y-4">
-        {section.items.map((item) => (
-          <div key={item.id} className="group flex justify-between items-start gap-4">
-            <div>
-              <div className="flex flex-wrap items-baseline gap-x-2">
-                <InlineField
-                  value={item.school}
-                  onChange={(v) => updateItem(item.id, { school: v })}
-                  placeholder="学校"
-                  inline
-                  className="font-semibold text-stone-900"
-                />
-                <span className="text-stone-300">·</span>
-                <InlineField
-                  value={item.degree}
-                  onChange={(v) => updateItem(item.id, { degree: v })}
-                  placeholder="学历"
-                  inline
-                  className="text-stone-600"
-                />
-              </div>
-              <div className="flex items-center gap-2 mt-1 text-xs text-stone-500">
-                <InlineField
-                  value={item.startDate}
-                  onChange={(v) => updateItem(item.id, { startDate: v })}
-                  placeholder="开始"
-                  inline
-                  className="text-xs"
-                />
-                <span>—</span>
-                <InlineField
-                  value={item.endDate}
-                  onChange={(v) => updateItem(item.id, { endDate: v })}
-                  placeholder="结束"
-                  inline
-                  className="text-xs"
-                />
-              </div>
-            </div>
-            <ItemActions
-              onCopy={() =>
-                onChange({
-                  ...section,
-                  items: [...section.items, { ...item, id: createId() }],
-                })
-              }
-              onDelete={() =>
-                onChange({
-                  ...section,
-                  items: section.items.filter((i) => i.id !== item.id),
-                })
-              }
+      {section.items.map((item) => (
+        <div key={item.id} className="group resume-item">
+          <div className="resume-item-top">
+            <InlineField
+              value={item.school}
+              onChange={(v) => updateItem(item.id, { school: v })}
+              placeholder="学校"
+              className="resume-t-item-primary flex-1"
             />
+            <div className="flex items-center gap-1">
+              <DateRange
+                start={item.startDate}
+                end={item.endDate}
+                onStart={(v) => updateItem(item.id, { startDate: v })}
+                onEnd={(v) => updateItem(item.id, { endDate: v })}
+                endPlaceholder="结束"
+              />
+              <ItemActions
+                variant="resume"
+                onCopy={() =>
+                  onChange({ ...section, items: [...section.items, { ...item, id: createId() }] })
+                }
+                onDelete={() =>
+                  onChange({ ...section, items: section.items.filter((i) => i.id !== item.id) })
+                }
+              />
+            </div>
           </div>
-        ))}
-      </div>
+          <InlineField
+            value={item.degree}
+            onChange={(v) => updateItem(item.id, { degree: v })}
+            placeholder="学历 / 专业"
+            className="resume-t-item-secondary"
+          />
+        </div>
+      ))}
     </section>
   )
 }
@@ -456,64 +406,50 @@ function CustomBlock({
   onRemove: () => void
 }) {
   return (
-    <section className="mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <InlineField
-          value={section.title}
-          onChange={(v) => onChange({ ...section, title: v })}
-          placeholder="区块标题"
-          inline
-          className="resume-section-label"
-        />
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() =>
-              onChange({ ...section, items: [...section.items, createEmptyCustomItem()] })
-            }
-            className="text-[0.7rem] font-medium text-[var(--resume-accent)] hover:text-[#7c2d12] px-2 py-1 rounded-md hover:bg-orange-50"
-          >
-            + 添加
+    <section className="resume-section">
+      <SectionHead
+        icon={<IconCustom />}
+        title={
+          <InlineField
+            value={section.title}
+            onChange={(v) => onChange({ ...section, title: v })}
+            placeholder="区块标题"
+            inline
+            className="text-[0.875rem] font-semibold uppercase tracking-wider"
+          />
+        }
+        onAdd={() => onChange({ ...section, items: [...section.items, createEmptyCustomItem()] })}
+        extra={
+          <button type="button" onClick={onRemove} className="resume-add-btn">
+            删除
           </button>
-          <button
-            type="button"
-            onClick={onRemove}
-            className="text-[0.7rem] text-red-500 hover:bg-red-50 px-2 py-1 rounded-md"
-          >
-            删除区块
-          </button>
-        </div>
-      </div>
+        }
+      />
       {section.items.map((item) => (
-        <div key={item.id} className="group flex gap-3 mb-3">
-          <InlineTextarea
-            value={item.content}
-            onChange={(v) =>
-              onChange({
-                ...section,
-                items: section.items.map((i) =>
-                  i.id === item.id ? { ...i, content: v } : i,
-                ),
-              })
-            }
-            placeholder="填写内容..."
-            className="flex-1 text-[0.85rem] text-stone-600"
-            rows={2}
-          />
-          <ItemActions
-            onCopy={() =>
-              onChange({
-                ...section,
-                items: [...section.items, { ...item, id: createId() }],
-              })
-            }
-            onDelete={() =>
-              onChange({
-                ...section,
-                items: section.items.filter((i) => i.id !== item.id),
-              })
-            }
-          />
+        <div key={item.id} className="group resume-item">
+          <div className="flex gap-2">
+            <InlineTextarea
+              value={item.content}
+              onChange={(v) =>
+                onChange({
+                  ...section,
+                  items: section.items.map((i) => (i.id === item.id ? { ...i, content: v } : i)),
+                })
+              }
+              placeholder="内容..."
+              className="resume-t-item-body flex-1"
+              rows={2}
+            />
+            <ItemActions
+              variant="resume"
+              onCopy={() =>
+                onChange({ ...section, items: [...section.items, { ...item, id: createId() }] })
+              }
+              onDelete={() =>
+                onChange({ ...section, items: section.items.filter((i) => i.id !== item.id) })
+              }
+            />
+          </div>
         </div>
       ))}
     </section>

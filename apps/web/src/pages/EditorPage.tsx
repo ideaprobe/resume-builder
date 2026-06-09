@@ -6,7 +6,7 @@ import { Toolbar } from '../components/editor/Toolbar'
 import { DefaultTemplate } from '../templates/default'
 import { useAutoSave } from '../hooks/useAutoSave'
 import { useEditorStore } from '../store/editorStore'
-import { createEmptyCustomSection } from '../types/resume'
+import { createEmptyCustomSection, normalizeBasicsFields, resolveGradient } from '../types/resume'
 
 const saveStatusLabel = {
   idle: '',
@@ -17,7 +17,7 @@ const saveStatusLabel = {
 
 export function EditorPage() {
   const { id } = useParams<{ id: string }>()
-  const { title, content, setResume, setTitle, setContent, updateTheme } = useEditorStore()
+  const { title, content, setResume, setTitle, setContent, updateGradient } = useEditorStore()
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['resume', id],
@@ -27,7 +27,19 @@ export function EditorPage() {
 
   useEffect(() => {
     if (data) {
-      setResume(data.id, data.title, data.content)
+      const normalized = {
+        ...data.content,
+        theme: {
+          ...data.content.theme,
+          gradient: resolveGradient(data.content.theme),
+        },
+        sections: data.content.sections.map((s) =>
+          s.type === 'basics'
+            ? { ...s, fields: normalizeBasicsFields(s.fields) }
+            : s,
+        ),
+      }
+      setResume(data.id, data.title, normalized)
     }
   }, [data, setResume])
 
@@ -76,27 +88,24 @@ export function EditorPage() {
 
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center text-stone-500">
-        加载中...
+      <div className="h-screen flex items-center justify-center bg-base-200">
+        <span className="loading loading-spinner loading-lg text-primary" />
       </div>
     )
   }
   if (error || !content) {
     return (
-      <div className="h-screen flex items-center justify-center text-red-500">
-        加载失败
+      <div className="h-screen flex items-center justify-center">
+        <div className="alert alert-error">加载失败</div>
       </div>
     )
   }
 
   return (
-    <div className="h-screen flex flex-col bg-[var(--app-bg)]">
-      <header className="h-14 bg-[var(--app-surface)] border-b border-stone-200/80 flex items-center justify-between px-5 shrink-0">
-        <div className="flex items-center gap-4 min-w-0">
-          <Link
-            to="/"
-            className="text-sm text-stone-500 hover:text-stone-800 transition-colors shrink-0"
-          >
+    <div className="h-screen flex flex-col bg-base-200">
+      <header className="navbar bg-base-100 border-b border-base-300 px-4 shrink-0 min-h-14">
+        <div className="flex-1 gap-3 min-w-0">
+          <Link to="/" className="btn btn-ghost btn-sm">
             ← 返回
           </Link>
           <input
@@ -104,22 +113,20 @@ export function EditorPage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="简历名称"
-            className="inline-field font-semibold text-base text-stone-800 max-w-xs"
+            className="input input-ghost input-sm font-semibold max-w-xs"
           />
         </div>
-        <div className="flex items-center gap-4">
-          <span
-            className={`text-xs ${
-              saveStatus === 'error' ? 'text-red-500' : 'text-stone-400'
-            }`}
-          >
-            {saveStatusLabel[saveStatus]}
-          </span>
-          <button
-            type="button"
-            onClick={handleExport}
-            className="px-4 py-2 bg-stone-900 text-stone-50 text-sm rounded-lg hover:bg-stone-800 transition-colors font-medium"
-          >
+        <div className="flex-none gap-3 items-center flex">
+          {saveStatus !== 'idle' && (
+            <span
+              className={`badge badge-sm ${
+                saveStatus === 'error' ? 'badge-error' : saveStatus === 'saved' ? 'badge-success' : 'badge-ghost'
+              }`}
+            >
+              {saveStatusLabel[saveStatus]}
+            </span>
+          )}
+          <button type="button" className="btn btn-primary btn-sm" onClick={handleExport}>
             导出 PDF
           </button>
         </div>
@@ -127,11 +134,11 @@ export function EditorPage() {
 
       <div className="flex flex-1 overflow-hidden">
         <Toolbar
-          backgroundColor={content.theme.backgroundColor}
-          onBackgroundChange={updateTheme}
+          theme={content.theme}
+          onGradientChange={updateGradient}
           onAddCustomSection={handleAddCustomSection}
         />
-        <main className="flex-1 overflow-auto py-10 px-6 bg-[var(--app-bg)]">
+        <main className="flex-1 overflow-auto py-8 px-4 lg:px-8">
           <DefaultTemplate content={content} onChange={setContent} />
         </main>
       </div>

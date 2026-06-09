@@ -26,6 +26,7 @@ type resumeData struct {
 
 type themeData struct {
 	BackgroundColor string `json:"backgroundColor"`
+	Gradient        string `json:"gradient"`
 }
 
 type section struct {
@@ -38,7 +39,11 @@ type section struct {
 
 func NewGenerator(templatesDir string) (*Generator, error) {
 	path := filepath.Join(templatesDir, "resume.html")
-	tmpl, err := template.ParseFiles(path)
+	funcs := template.FuncMap{
+		"add": func(a, b int) int { return a + b },
+		"mod": func(a, b int) int { return a % b },
+	}
+	tmpl, err := template.New("resume.html").Funcs(funcs).ParseFiles(path)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +55,12 @@ func (g *Generator) Generate(content json.RawMessage) ([]byte, error) {
 	if err := json.Unmarshal(content, &data); err != nil {
 		return nil, err
 	}
-	if data.Theme.BackgroundColor == "" {
-		data.Theme.BackgroundColor = "#ffffff"
+	if data.Theme.Gradient == "" {
+		if data.Theme.BackgroundColor != "" {
+			data.Theme.Gradient = data.Theme.BackgroundColor
+		} else {
+			data.Theme.Gradient = "linear-gradient(145deg, #667eea 0%, #764ba2 100%)"
+		}
 	}
 
 	var htmlBuf bytes.Buffer

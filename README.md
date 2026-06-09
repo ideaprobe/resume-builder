@@ -41,5 +41,5 @@ pnpm dev
 
 ## 技术栈
 
-- 前端：React + Vite + Tailwind CSS + pnpm
+- 前端：React + Vite + Tailwind CSS 4 + daisyUI 5 + pnpm
 - 后端：Go + Gin + PostgreSQL + chromedp

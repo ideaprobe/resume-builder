@@ -1,5 +1,7 @@
 export interface ResumeTheme {
-  backgroundColor: string
+  /** @deprecated 兼容旧数据，优先使用 gradient */
+  backgroundColor?: string
+  gradient?: string
 }
 
 export interface BasicsFields {
@@ -8,6 +10,7 @@ export interface BasicsFields {
   email: string
   phone: string
   location: string
+  avatar: string
 }
 
 export interface WorkItem {
@@ -104,13 +107,34 @@ export interface User {
   createdAt: string
 }
 
-export const PRESET_COLORS = [
-  { label: '白', value: '#ffffff' },
-  { label: '浅灰', value: '#f5f5f5' },
-  { label: '浅蓝', value: '#f0f4f8' },
-  { label: '米色', value: '#faf8f5' },
-  { label: '浅紫', value: '#f8f5ff' },
+export const DEFAULT_GRADIENT =
+  'linear-gradient(145deg, #667eea 0%, #764ba2 100%)'
+
+export const PRESET_GRADIENTS = [
+  { label: '暮光紫', gradient: 'linear-gradient(145deg, #667eea 0%, #764ba2 100%)' },
+  { label: '海洋蓝', gradient: 'linear-gradient(145deg, #0093E9 0%, #80D0C7 100%)' },
+  { label: '珊瑚粉', gradient: 'linear-gradient(145deg, #ff9a9e 0%, #fecfef 100%)' },
+  { label: '薄雾蓝', gradient: 'linear-gradient(145deg, #a8edea 0%, #fed6e3 100%)' },
+  { label: '暖金', gradient: 'linear-gradient(145deg, #f7971e 0%, #ffd200 100%)' },
+  { label: '深空', gradient: 'linear-gradient(145deg, #0f2027 0%, #203a43 50%, #2c5364 100%)' },
 ] as const
+
+export function resolveGradient(theme: Partial<ResumeTheme> | undefined): string {
+  if (theme?.gradient) return theme.gradient
+  if (theme?.backgroundColor) return theme.backgroundColor
+  return DEFAULT_GRADIENT
+}
+
+export function normalizeBasicsFields(fields: Partial<BasicsFields>): BasicsFields {
+  return {
+    name: fields.name ?? '',
+    title: fields.title ?? '',
+    email: fields.email ?? '',
+    phone: fields.phone ?? '',
+    location: fields.location ?? '',
+    avatar: fields.avatar ?? '',
+  }
+}
 
 export function createId() {
   return crypto.randomUUID()
