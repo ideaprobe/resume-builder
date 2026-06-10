@@ -334,6 +334,258 @@
   line-height: 1.8;
 }
 
+.resume-t-item-body p {
+  margin: 0 0 0.35em;
+}
+
+.resume-t-item-body p:last-child {
+  margin-bottom: 0;
+}
+
+.resume-t-item-body ul,
+.resume-t-item-body ol {
+  margin: 0.25em 0;
+  padding-left: 1.25em;
+}
+
+.resume-t-item-body li {
+  margin: 0.15em 0;
+}
+
+/* ── 富文本：预览态 / 选中嵌入编辑框 ── */
+.inline-rich-text {
+  position: relative;
+  width: 100%;
+}
+
+.inline-rich-text-preview {
+  min-height: 1.5rem;
+  cursor: text;
+  border-radius: var(--radius-field, 0.5rem);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.inline-rich-text-preview:hover {
+  background: var(--r-hover);
+}
+
+.inline-rich-text-preview-placeholder {
+  opacity: 0.45;
+}
+
+.inline-rich-text-preview-content p {
+  margin: 0 0 0.35em;
+}
+
+.inline-rich-text-preview-content p:last-child {
+  margin-bottom: 0;
+}
+
+.inline-rich-text-preview-content ul,
+.inline-rich-text-preview-content ol {
+  margin: 0.25em 0;
+  padding-left: 1.25em;
+}
+
+.inline-rich-text-preview-content li {
+  margin: 0.15em 0;
+}
+
+.inline-rich-text-preview-content a,
+.inline-rich-text-body.ProseMirror a {
+  color: var(--r-accent);
+  text-decoration: underline;
+}
+
+.inline-rich-text-preview-content s,
+.inline-rich-text-preview-content del,
+.inline-rich-text-body.ProseMirror s,
+.inline-rich-text-body.ProseMirror del {
+  text-decoration: line-through;
+}
+
+/* 选中后：区域内嵌工具栏 + 编辑区 */
+.inline-rich-text-frame {
+  border: 1px solid var(--r-accent-border);
+  border-radius: var(--radius-field, 0.5rem);
+  background: var(--r-focus);
+  box-shadow: 0 0 0 2px var(--r-accent-border);
+  overflow: hidden;
+}
+
+.inline-rich-text-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.45rem;
+  padding: 0.45rem 0.6rem;
+  background: #fafafa;
+  border-bottom: 1px solid var(--r-divider);
+}
+
+.inline-rich-text-toolbar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.inline-rich-text-toolbar-divider {
+  width: 1px;
+  height: 1.35rem;
+  background: #d4d4d8;
+  flex-shrink: 0;
+  margin: 0 0.1rem;
+}
+
+.inline-rich-text-select {
+  height: 1.85rem;
+  min-width: 4.5rem;
+  padding: 0 0.4rem;
+  font-size: 0.75rem;
+  font-family: var(--font-ui);
+  color: var(--r-text);
+  background: #fff;
+  border: 1px solid #d4d4d8;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.inline-rich-text-select:focus {
+  outline: 2px solid var(--r-accent-border);
+  border-color: var(--r-accent);
+}
+
+.inline-rich-text-color-label {
+  font-size: 0.6875rem;
+  color: var(--r-text-muted);
+  margin-right: 0.15rem;
+  white-space: nowrap;
+}
+
+.inline-rich-text-swatch {
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border: 1px solid #d4d4d8;
+  border-radius: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.inline-rich-text-swatch--active {
+  outline: 2px solid var(--r-accent);
+  outline-offset: 1px;
+}
+
+.inline-rich-text-color-input {
+  display: inline-flex;
+  align-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0.1rem;
+  border: 1px solid #d4d4d8;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.inline-rich-text-color-input input[type='color'] {
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.inline-rich-text-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.85rem;
+  height: 1.85rem;
+  padding: 0 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  color: #3f3f46;
+  background: #fff;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.inline-rich-text-btn--bold {
+  font-weight: 800;
+}
+
+.inline-rich-text-btn--italic {
+  font-style: italic;
+}
+
+.inline-rich-text-btn--underline {
+  text-decoration: underline;
+}
+
+.inline-rich-text-btn--strike {
+  text-decoration: line-through;
+}
+
+.inline-rich-text-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.inline-rich-text-btn:hover:not(:disabled) {
+  background: #f4f4f5;
+  border-color: #e4e4e7;
+}
+
+.inline-rich-text-btn--active {
+  color: var(--r-accent);
+  background: var(--r-accent-soft);
+  border-color: var(--r-accent-border);
+}
+
+.inline-rich-text-body {
+  min-height: 4rem;
+  padding: 0.5rem 0.65rem;
+  line-height: 1.7;
+  word-break: break-word;
+}
+
+.inline-rich-text-body.ProseMirror {
+  outline: none;
+}
+
+.inline-rich-text-body.ProseMirror p {
+  margin: 0 0 0.35em;
+}
+
+.inline-rich-text-body.ProseMirror p:last-child {
+  margin-bottom: 0;
+}
+
+.inline-rich-text-body.ProseMirror ul,
+.inline-rich-text-body.ProseMirror ol {
+  margin: 0.25em 0;
+  padding-left: 1.25em;
+}
+
+.inline-rich-text-body.ProseMirror li {
+  margin: 0.15em 0;
+}
+
+.inline-rich-text-body.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--r-text-caption);
+  opacity: 0.55;
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
 .resume-t-caption {
   font-size: 0.75rem;
   font-weight: 500;
@@ -353,13 +605,13 @@
 }
 
 /* ── 技能标签 ── */
-.resume-skills {
+.resume-certificates {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 0.6rem;
 }
 
-.resume-skill-tag {
+.resume-certificate-tag {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -373,7 +625,7 @@
   transition: border-color 0.15s, background 0.15s;
 }
 
-.resume-skill-tag:hover {
+.resume-certificate-tag:hover {
   border-color: var(--r-accent);
   background: var(--r-accent-soft);
 }

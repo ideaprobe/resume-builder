@@ -81,8 +81,8 @@ func DefaultResumeContent() json.RawMessage {
 				"items": []any{},
 			},
 			map[string]any{
-				"id":    "skills-1",
-				"type":  "skills",
+				"id":    "cert-1",
+				"type":  "certificates",
 				"items": []any{},
 			},
 		},

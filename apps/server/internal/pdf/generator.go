@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/chromedp/cdproto/page"
@@ -46,6 +47,7 @@ func NewGenerator(templatesDir string) (*Generator, error) {
 	funcs := template.FuncMap{
 		"add": func(a, b int) int { return a + b },
 		"mod": func(a, b int) int { return a % b },
+		"formatBody": formatBodyHTML,
 	}
 	tmpl, err := template.New("resume.html").Funcs(funcs).ParseFiles(path)
 	if err != nil {
@@ -86,6 +88,7 @@ func (g *Generator) Generate(content json.RawMessage) ([]byte, error) {
 			data.Theme.HeroTextMuted = "#f1f5f9"
 		}
 	}
+	data.Sections = orderSections(data.Sections)
 
 	var htmlBuf bytes.Buffer
 	if err := g.tmpl.Execute(&htmlBuf, data); err != nil {
@@ -131,4 +134,40 @@ func (g *Generator) Generate(content json.RawMessage) ([]byte, error) {
 		return nil, fmt.Errorf("chromedp: %w", err)
 	}
 	return pdfBuf, nil
+}
+
+func orderSections(sections []section) []section {
+	var basics, work, education, certificates, customs []section
+	for _, s := range sections {
+		switch s.Type {
+		case "basics":
+			basics = append(basics, s)
+		case "work":
+			work = append(work, s)
+		case "education":
+			education = append(education, s)
+		case "certificates":
+			certificates = append(certificates, s)
+		case "custom":
+			customs = append(customs, s)
+		}
+	}
+	out := make([]section, 0, len(sections))
+	out = append(out, basics...)
+	out = append(out, work...)
+	out = append(out, education...)
+	out = append(out, certificates...)
+	out = append(out, customs...)
+	return out
+}
+
+func formatBodyHTML(s string) template.HTML {
+	if s == "" {
+		return template.HTML("")
+	}
+	if strings.Contains(s, "<") {
+		return template.HTML(s)
+	}
+	escaped := template.HTMLEscapeString(s)
+	return template.HTML(strings.ReplaceAll(escaped, "\n", "<br>"))
 }

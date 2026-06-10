@@ -50,7 +50,7 @@ export interface EducationItem {
   endDate: string
 }
 
-export interface SkillItem {
+export interface CertificateItem {
   id: string
   name: string
 }
@@ -60,7 +60,7 @@ export interface CustomItem {
   content: string
 }
 
-export type SectionType = 'basics' | 'work' | 'education' | 'skills' | 'custom'
+export type SectionType = 'basics' | 'work' | 'education' | 'certificates' | 'custom'
 
 export interface BasicsSection {
   id: string
@@ -80,10 +80,10 @@ export interface EducationSection {
   items: EducationItem[]
 }
 
-export interface SkillsSection {
+export interface CertificatesSection {
   id: string
-  type: 'skills'
-  items: SkillItem[]
+  type: 'certificates'
+  items: CertificateItem[]
 }
 
 export interface CustomSection {
@@ -97,7 +97,7 @@ export type ResumeSection =
   | BasicsSection
   | WorkSection
   | EducationSection
-  | SkillsSection
+  | CertificatesSection
   | CustomSection
 
 export interface ResumeContent {
@@ -402,7 +402,7 @@ export function createEmptyEducationItem(): EducationItem {
   }
 }
 
-export function createEmptySkillItem(): SkillItem {
+export function createEmptyCertificateItem(): CertificateItem {
   return { id: createId(), name: '' }
 }
 

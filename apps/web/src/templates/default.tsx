@@ -6,24 +6,24 @@ import {
   IconLocation,
   IconMail,
   IconPhone,
-  IconSkills,
+  IconCertificate,
   IconWork,
 } from '../components/resume/SectionIcons'
 import { InlineField } from '../components/ui/InlineField'
-import { InlineTextarea } from '../components/ui/InlineTextarea'
+import { InlineRichText } from '../components/ui/InlineRichText'
 import { ItemActions } from '../components/editor/ItemActions'
 import type {
   CustomSection,
   EducationSection,
   ResumeContent,
   ResumeSection,
-  SkillsSection,
+  CertificatesSection,
   WorkSection,
 } from '../types/resume'
 import {
   createEmptyCustomItem,
   createEmptyEducationItem,
-  createEmptySkillItem,
+  createEmptyCertificateItem,
   createEmptyWorkItem,
   createId,
   normalizeBasicsFields,
@@ -52,7 +52,7 @@ export function DefaultTemplate({ content, onChange }: DefaultTemplateProps) {
   const basics = findSection(content.sections, 'basics')
   const work = findSection(content.sections, 'work')
   const education = findSection(content.sections, 'education')
-  const skills = findSection(content.sections, 'skills')
+  const certificates = findSection(content.sections, 'certificates')
   const customSections = content.sections.filter((s) => s.type === 'custom')
 
   const updateSection = (sectionId: string, updater: (s: ResumeSection) => ResumeSection) => {
@@ -62,7 +62,7 @@ export function DefaultTemplate({ content, onChange }: DefaultTemplateProps) {
     })
   }
 
-  if (!basics || !work || !education || !skills) return null
+  if (!basics || !work || !education || !certificates) return null
 
   const fields = normalizeBasicsFields(basics.fields)
   const themeVars = resolveThemeVars(content.theme)
@@ -75,12 +75,16 @@ export function DefaultTemplate({ content, onChange }: DefaultTemplateProps) {
   }
 
   const sectionBlocks: ReactNode[] = [
-    <SkillsBlock key="skills" section={skills} onChange={(s) => updateSection(skills.id, () => s)} />,
     <WorkBlock key="work" section={work} onChange={(s) => updateSection(work.id, () => s)} />,
     <EducationBlock
       key="education"
       section={education}
       onChange={(s) => updateSection(education.id, () => s)}
+    />,
+    <CertificatesBlock
+      key="certificates"
+      section={certificates}
+      onChange={(s) => updateSection(certificates.id, () => s)}
     />,
     ...customSections.map((section) => (
       <CustomBlock
@@ -220,24 +224,26 @@ function DateRange({
   )
 }
 
-function SkillsBlock({
+function CertificatesBlock({
   section,
   onChange,
 }: {
-  section: SkillsSection
-  onChange: (s: SkillsSection) => void
+  section: CertificatesSection
+  onChange: (s: CertificatesSection) => void
 }) {
   return (
     <section className="resume-section">
       <SectionHead
-        icon={<IconSkills />}
-        title="技能"
-        onAdd={() => onChange({ ...section, items: [...section.items, createEmptySkillItem()] })}
+        icon={<IconCertificate />}
+        title="证书"
+        onAdd={() =>
+          onChange({ ...section, items: [...section.items, createEmptyCertificateItem()] })
+        }
       />
-      {section.items.length === 0 && <p className="resume-empty-hint">添加技能</p>}
-      <div className="resume-skills">
+      {section.items.length === 0 && <p className="resume-empty-hint">添加证书</p>}
+      <div className="resume-certificates">
         {section.items.map((item) => (
-          <span key={item.id} className="group resume-skill-tag">
+          <span key={item.id} className="group resume-certificate-tag">
             <InlineField
               value={item.name}
               onChange={(v) =>
@@ -246,7 +252,7 @@ function SkillsBlock({
                   items: section.items.map((i) => (i.id === item.id ? { ...i, name: v } : i)),
                 })
               }
-              placeholder="技能"
+              placeholder="证书名称"
               inline
             />
             <ItemActions
@@ -320,12 +326,11 @@ function WorkBlock({
             placeholder="职位"
             className="resume-t-item-secondary"
           />
-          <InlineTextarea
+          <InlineRichText
             value={item.description}
             onChange={(v) => updateItem(item.id, { description: v })}
             placeholder="工作描述..."
             className="resume-t-item-body"
-            rows={3}
           />
         </div>
       ))}
@@ -426,7 +431,7 @@ function CustomBlock({
       {section.items.map((item) => (
         <div key={item.id} className="group resume-item">
           <div className="flex gap-2">
-            <InlineTextarea
+            <InlineRichText
               value={item.content}
               onChange={(v) =>
                 onChange({
@@ -436,7 +441,6 @@ function CustomBlock({
               }
               placeholder="内容..."
               className="resume-t-item-body flex-1"
-              rows={2}
             />
             <ItemActions
               variant="resume"
