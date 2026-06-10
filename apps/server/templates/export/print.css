@@ -1,0 +1,54 @@
+/* PDF 打印：视口与 @page 均为 A4，内容铺满整页 */
+@page {
+  size: 210mm 297mm;
+  margin: 0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  background: #ffffff;
+}
+
+.resume-canvas.resume-sheet {
+  width: 100%;
+  min-height: 297mm;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* 导出 HTML 无 inline-field，补全页眉文字色 */
+.resume-hero .resume-t-display,
+.resume-hero .resume-t-headline {
+  color: var(--r-on-gradient-muted);
+  text-shadow: var(--r-on-gradient-shadow, none);
+}
+
+.resume-pdf-avatar {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+}
+
+.resume-pdf-avatar-empty {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  flex-shrink: 0;
+}

@@ -4,305 +4,98 @@
   <meta charset="UTF-8" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@callmebill/lxgw-wenkai-web@1.522.0/lxgwwenkai-regular/result.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@callmebill/lxgw-wenkai-web@1.522.0/lxgwwenkai-medium/result.css" />
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: "LXGW WenKai", "LXGW WenKai Medium", "PingFang SC", serif;
-      font-size: 14px;
-      line-height: 1.75;
-      color: #1e1e2f;
-      background: #ffffff;
-      -webkit-font-smoothing: antialiased;
-    }
-    .page {
-      min-height: 297mm;
-      padding: 0 0 40px;
-      background: #ffffff;
-    }
-    .hero {
-      position: relative;
-      padding: 36px 44px 32px;
-      margin-bottom: 8px;
-    }
-    .hero-bg {
-      position: absolute;
-      inset: 0;
-      background: {{.Theme.Gradient}};
-    }
-    .hero-bg::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.12) 55%, rgba(255,255,255,0.08) 100%);
-    }
-    .hero--light-text .hero-bg::after {
-      background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 45%, rgba(0,0,0,0.14) 100%);
-    }
-    .hero-content {
-      position: relative;
-      display: flex;
-      align-items: center;
-      gap: 32px;
-    }
-    .avatar {
-      width: 112px;
-      height: 112px;
-      border-radius: 50%;
-      border: 3px solid rgba(255,255,255,0.95);
-      object-fit: cover;
-      flex-shrink: 0;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.12);
-    }
-    .avatar-empty {
-      width: 112px;
-      height: 112px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.35);
-      border: 3px solid rgba(255,255,255,0.95);
-      flex-shrink: 0;
-    }
-    .hero-info { flex: 1; min-width: 0; }
-    .name {
-      font-family: "LXGW WenKai Medium", "LXGW WenKai", serif;
-      font-size: 36px;
-      font-weight: 500;
-      letter-spacing: 0.06em;
-      line-height: 1.25;
-      color: {{if .Theme.HeroTextMuted}}{{.Theme.HeroTextMuted}}{{else}}#334155{{end}};
-      text-shadow: 0 1px 2px rgba(255,255,255,0.85);
-    }
-    .hero--light-text .name,
-    .hero--light-text .subtitle {
-      text-shadow: 0 1px 2px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.22);
-    }
-    .subtitle {
-      margin-top: 6px;
-      font-size: 16px;
-      font-weight: 500;
-      letter-spacing: 0.04em;
-      color: {{if .Theme.HeroTextMuted}}{{.Theme.HeroTextMuted}}{{else}}#334155{{end}};
-      text-shadow: 0 1px 2px rgba(255,255,255,0.85);
-    }
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 12px;
-      margin-top: 16px;
-    }
-    .meta span {
-      font-size: 13px;
-      color: {{if .Theme.HeroTextMuted}}{{.Theme.HeroTextMuted}}{{else}}#334155{{end}};
-      padding: 5px 12px;
-      background: rgba(255,255,255,0.62);
-      border: 1px solid rgba(255,255,255,0.75);
-      border-radius: 999px;
-      box-shadow: 0 1px 2px rgba(15,23,42,0.06);
-      text-shadow: 0 1px 2px rgba(255,255,255,0.85);
-    }
-    .hero--light-text .meta span {
-      background: rgba(255,255,255,0.22);
-      border: 1px solid rgba(255,255,255,0.38);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-      text-shadow: 0 1px 2px rgba(0,0,0,0.35);
-    }
-    .sections { padding: 0 44px; }
-    .strip {
-      padding: 24px 0;
-      border-bottom: 1px solid #ececf2;
-    }
-    .strip:last-child { border-bottom: none; }
-    .section { margin-bottom: 0; }
-    .section-head {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-      padding-left: 14px;
-      border-left: 3px solid {{.Theme.Accent}};
-    }
-    .section-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      background: color-mix(in srgb, {{.Theme.Accent}} 12%, white);
-      color: {{.Theme.Accent}};
-      flex-shrink: 0;
-    }
-    .section-icon svg { width: 18px; height: 18px; }
-    .section-title {
-      font-family: "LXGW WenKai Medium", "LXGW WenKai", serif;
-      font-size: 15px;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      color: #1e1e2f;
-    }
-    .certificates {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 10px;
-    }
-    .certificate-tag {
-      padding: 6px 14px;
-      background: #f8f8fc;
-      border: 1px solid color-mix(in srgb, {{.Theme.Accent}} 24%, white);
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 500;
-      color: #4b4b63;
-    }
-    .item {
-      position: relative;
-      margin-bottom: 20px;
-      padding-left: 18px;
-      margin-left: 6px;
-      border-left: 2px solid #ececf2;
-    }
-    .item:last-child { margin-bottom: 0; }
-    .item::before {
-      content: "";
-      position: absolute;
-      left: -5px;
-      top: 7px;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: {{.Theme.Accent}};
-      box-shadow: 0 0 0 2px #fff;
-    }
-    .item-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 16px;
-    }
-    .item-primary {
-      font-family: "LXGW WenKai Medium", "LXGW WenKai", serif;
-      font-size: 15px;
-      font-weight: 500;
-      color: #1e1e2f;
-    }
-    .item-date {
-      font-size: 12px;
-      font-weight: 500;
-      color: #7a7a94;
-      white-space: nowrap;
-      padding: 2px 9px;
-      background: #f8f8fc;
-      border-radius: 4px;
-    }
-    .item-secondary {
-      margin-top: 2px;
-      font-size: 13px;
-      font-weight: 500;
-      color: {{.Theme.Accent}};
-    }
-    .item-body {
-      margin-top: 7px;
-      font-size: 13px;
-      color: #4b4b63;
-      line-height: 1.8;
-    }
-    .item-body p { margin: 0 0 0.35em; }
-    .item-body p:last-child { margin-bottom: 0; }
-    .item-body ul, .item-body ol { margin: 0.25em 0; padding-left: 1.25em; }
-    .item-body li { margin: 0.15em 0; }
-    .item-body a { color: {{.Theme.Accent}}; text-decoration: underline; }
-    .item-body s, .item-body del { text-decoration: line-through; }
-    .item-body u { text-decoration: underline; }
-    .item-body mark { border-radius: 2px; padding: 0 1px; }
-  </style>
+  <style>{{.FontsCSS}}</style>
+  <style>{{.ResumeCSS}}</style>
+  <style>{{.PrintCSS}}</style>
 </head>
 <body>
-  <div class="page">
+  <div class="resume-canvas resume-sheet" style="{{.ThemeStyle}}">
     {{range .Sections}}
       {{if eq .Type "basics"}}
-      <div class="hero{{if ne $.Theme.HeroTone "dark"}} hero--light-text{{end}}">
-        <div class="hero-bg"></div>
-        <div class="hero-content">
+      <header class="resume-hero">
+        <div class="resume-hero-bg" aria-hidden="true"></div>
+        <div class="resume-hero-content">
           {{if index .Fields "avatar"}}
-          <img class="avatar" src="{{index .Fields "avatar"}}" alt="" />
+          <img class="resume-pdf-avatar" src="{{index .Fields "avatar"}}" alt="" />
           {{else}}
-          <div class="avatar-empty"></div>
+          <div class="resume-pdf-avatar-empty"></div>
           {{end}}
-          <div class="hero-info">
-            <div class="name">{{index .Fields "name"}}</div>
-            <div class="subtitle">{{index .Fields "title"}}</div>
-            <div class="meta">
-              <span>{{index .Fields "email"}}</span>
-              <span>{{index .Fields "phone"}}</span>
-              <span>{{index .Fields "location"}}</span>
+          <div class="resume-hero-info">
+            <div class="resume-t-display">{{esc (index .Fields "name")}}</div>
+            <div class="resume-t-headline">{{esc (index .Fields "title")}}</div>
+            <div class="resume-t-meta">
+              <span class="resume-meta-item">{{esc (index .Fields "email")}}</span>
+              <span class="resume-meta-item">{{esc (index .Fields "phone")}}</span>
+              <span class="resume-meta-item">{{esc (index .Fields "location")}}</span>
             </div>
           </div>
         </div>
-      </div>
+      </header>
       {{end}}
     {{end}}
 
-    <div class="sections">
+    <div class="resume-sections">
     {{range .Sections}}
       {{if eq .Type "work"}}
-      <div class="strip">
-        <div class="section">
-          <div class="section-head">
-            <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span>
-            <div class="section-title">工作经历</div>
+      <div class="resume-section-strip">
+        <section class="resume-section">
+          <div class="resume-section-head">
+            <span class="resume-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span>
+            <div class="resume-section-title">工作经历</div>
           </div>
           {{range .Items}}
-          <div class="item">
-            <div class="item-top">
-              <div class="item-primary">{{index . "company"}}</div>
-              <div class="item-date">{{index . "startDate"}} — {{if index . "endDate"}}{{index . "endDate"}}{{else}}至今{{end}}</div>
+          <div class="resume-item">
+            <div class="resume-item-top">
+              <div class="resume-t-item-primary">{{esc (index . "company")}}</div>
+              <span class="resume-t-caption">{{esc (index . "startDate")}}<span class="resume-t-caption-sep">—</span>{{if index . "endDate"}}{{esc (index . "endDate")}}{{else}}至今{{end}}</span>
             </div>
-            <div class="item-secondary">{{index . "position"}}</div>
-            <div class="item-body">{{formatBody (index . "description")}}</div>
+            <div class="resume-t-item-secondary">{{esc (index . "position")}}</div>
+            <div class="resume-t-item-body">{{formatBody (index . "description")}}</div>
           </div>
           {{end}}
-        </div>
+        </section>
       </div>
       {{else if eq .Type "education"}}
-      <div class="strip">
-        <div class="section">
-          <div class="section-head">
-            <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 2 6 2s6-.9 6-2v-5"/></svg></span>
-            <div class="section-title">教育背景</div>
+      <div class="resume-section-strip">
+        <section class="resume-section">
+          <div class="resume-section-head">
+            <span class="resume-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 2 6 2s6-.9 6-2v-5"/></svg></span>
+            <div class="resume-section-title">教育背景</div>
           </div>
           {{range .Items}}
-          <div class="item">
-            <div class="item-top">
-              <div class="item-primary">{{index . "school"}}</div>
-              <div class="item-date">{{index . "startDate"}} — {{index . "endDate"}}</div>
+          <div class="resume-item">
+            <div class="resume-item-top">
+              <div class="resume-t-item-primary">{{esc (index . "school")}}</div>
+              <span class="resume-t-caption">{{esc (index . "startDate")}}<span class="resume-t-caption-sep">—</span>{{esc (index . "endDate")}}</span>
             </div>
-            <div class="item-secondary">{{index . "degree"}}</div>
+            <div class="resume-t-item-secondary">{{esc (index . "degree")}}</div>
           </div>
           {{end}}
-        </div>
+        </section>
       </div>
       {{else if eq .Type "certificates"}}
-      <div class="strip">
-        <div class="section">
-          <div class="section-head">
-            <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/></svg></span>
-            <div class="section-title">证书</div>
+      <div class="resume-section-strip">
+        <section class="resume-section">
+          <div class="resume-section-head">
+            <span class="resume-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/></svg></span>
+            <div class="resume-section-title">证书</div>
           </div>
-          <div class="certificates">
-            {{range .Items}}<span class="certificate-tag">{{index . "name"}}</span>{{end}}
+          <div class="resume-certificates">
+            {{range .Items}}<span class="resume-certificate-tag">{{esc (index . "name")}}</span>{{end}}
           </div>
-        </div>
+        </section>
       </div>
       {{else if eq .Type "custom"}}
-      <div class="strip">
-        <div class="section">
-          <div class="section-head">
-            <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
-            <div class="section-title">{{.Title}}</div>
+      <div class="resume-section-strip">
+        <section class="resume-section">
+          <div class="resume-section-head">
+            <span class="resume-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+            <div class="resume-section-title">{{esc .Title}}</div>
           </div>
           {{range .Items}}
-          <div class="item"><div class="item-body">{{formatBody (index . "content")}}</div></div>
+          <div class="resume-item"><div class="resume-t-item-body">{{formatBody (index . "content")}}</div></div>
           {{end}}
-        </div>
+        </section>
       </div>
       {{end}}
     {{end}}

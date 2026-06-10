@@ -10,9 +10,17 @@ interface ToolbarProps {
   theme: ResumeTheme
   onThemeChange: (theme: ResumeTheme) => void
   onAddCustomSection: () => void
+  onLoadSample?: () => void
+  disabled?: boolean
 }
 
-export function Toolbar({ theme, onThemeChange, onAddCustomSection }: ToolbarProps) {
+export function Toolbar({
+  theme,
+  onThemeChange,
+  onAddCustomSection,
+  onLoadSample,
+  disabled = false,
+}: ToolbarProps) {
   const currentGradient = resolveGradient(theme)
   const activePreset = findThemePreset(theme)
 
@@ -35,6 +43,7 @@ export function Toolbar({ theme, onThemeChange, onAddCustomSection }: ToolbarPro
                 key={preset.id}
                 type="button"
                 title={preset.label}
+                disabled={disabled}
                 onClick={() => onThemeChange(themeFromPreset(preset))}
                 className={`group relative flex flex-col overflow-hidden rounded-xl border-2 transition-all hover:scale-[1.02] hover:shadow-md ${
                   isActive
@@ -76,9 +85,24 @@ export function Toolbar({ theme, onThemeChange, onAddCustomSection }: ToolbarPro
         <h3 className="text-xs font-semibold uppercase tracking-wider text-base-content/50 mb-3">
           内容区块
         </h3>
-        <button type="button" className="btn btn-primary btn-sm w-full" onClick={onAddCustomSection}>
+        <button
+          type="button"
+          className="btn btn-primary btn-sm w-full"
+          disabled={disabled}
+          onClick={onAddCustomSection}
+        >
           + 自定义区块
         </button>
+        {onLoadSample && (
+          <button
+            type="button"
+            className="btn btn-outline btn-sm w-full mt-2"
+            disabled={disabled}
+            onClick={onLoadSample}
+          >
+            加载马超示例
+          </button>
+        )}
       </div>
 
       <div className="mt-auto">

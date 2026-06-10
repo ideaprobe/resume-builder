@@ -10,20 +10,49 @@ export function useAutoSave<T>(
   const [status, setStatus] = useState<SaveStatus>('idle')
   const isFirst = useRef(true)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const savedFadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const dataRef = useRef(data)
   dataRef.current = data
+  const saveFnRef = useRef(saveFn)
+  saveFnRef.current = saveFn
+  const pausedRef = useRef(false)
 
-  const flush = useCallback(async () => {
-    if (dataRef.current == null) return
-    if (timer.current) clearTimeout(timer.current)
-    setStatus('saving')
-    try {
-      await saveFn(dataRef.current)
-      setStatus('saved')
-    } catch {
-      setStatus('error')
+  const clearSavedFade = () => {
+    if (savedFadeTimer.current) {
+      clearTimeout(savedFadeTimer.current)
+      savedFadeTimer.current = null
     }
-  }, [saveFn])
+  }
+
+  const flush = useCallback(async (options?: { silent?: boolean }) => {
+    if (dataRef.current == null) return
+    if (timer.current) {
+      clearTimeout(timer.current)
+      timer.current = null
+    }
+    clearSavedFade()
+    if (!options?.silent) setStatus('saving')
+    try {
+      await saveFnRef.current(dataRef.current)
+      if (!options?.silent) {
+        setStatus('saved')
+        savedFadeTimer.current = setTimeout(() => {
+          setStatus((s) => (s === 'saved' ? 'idle' : s))
+        }, 2000)
+      }
+    } catch {
+      if (!options?.silent) setStatus('error')
+      throw new Error('save failed')
+    }
+  }, [])
+
+  const setPaused = useCallback((paused: boolean) => {
+    pausedRef.current = paused
+    if (paused && timer.current) {
+      clearTimeout(timer.current)
+      timer.current = null
+    }
+  }, [])
 
   useEffect(() => {
     if (data == null) return
@@ -33,10 +62,12 @@ export function useAutoSave<T>(
       return
     }
 
+    if (pausedRef.current) return
+
     if (timer.current) clearTimeout(timer.current)
-    setStatus('idle')
 
     timer.current = setTimeout(() => {
+      if (pausedRef.current) return
       void flush()
     }, delay)
 
@@ -45,5 +76,7 @@ export function useAutoSave<T>(
     }
   }, [data, delay, flush])
 
-  return { status, flush }
+  useEffect(() => () => clearSavedFade(), [])
+
+  return { status, flush, setPaused }
 }
