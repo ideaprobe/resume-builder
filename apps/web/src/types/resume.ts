@@ -381,6 +381,28 @@ export function createId() {
   return crypto.randomUUID()
 }
 
+/** 可排序区块（不含页眉 basics） */
+export function getSortableSections(sections: ResumeSection[]): ResumeSection[] {
+  return sections.filter((s) => s.type !== 'basics')
+}
+
+export function reorderResumeSections(
+  sections: ResumeSection[],
+  activeId: string,
+  overId: string,
+): ResumeSection[] {
+  const basics = sections.filter((s) => s.type === 'basics')
+  const sortable = getSortableSections(sections)
+  const oldIndex = sortable.findIndex((s) => s.id === activeId)
+  const newIndex = sortable.findIndex((s) => s.id === overId)
+  if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) return sections
+
+  const next = [...sortable]
+  const [moved] = next.splice(oldIndex, 1)
+  next.splice(newIndex, 0, moved)
+  return [...basics, ...next]
+}
+
 export function createEmptyWorkItem(): WorkItem {
   return {
     id: createId(),

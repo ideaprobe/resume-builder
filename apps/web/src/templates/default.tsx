@@ -12,6 +12,7 @@ import {
 import { InlineField } from '../components/ui/InlineField'
 import { InlineRichText } from '../components/ui/InlineRichText'
 import { ItemActions } from '../components/editor/ItemActions'
+import { SortableSectionStrip, SortableSections } from '../components/editor/SortableSections'
 import type {
   CustomSection,
   EducationSection,
@@ -26,7 +27,9 @@ import {
   createEmptyCertificateItem,
   createEmptyWorkItem,
   createId,
+  getSortableSections,
   normalizeBasicsFields,
+  reorderResumeSections,
   resolveThemeVars,
 } from '../types/resume'
 
@@ -44,16 +47,12 @@ function findSection<T extends ResumeSection['type']>(
     | undefined
 }
 
-function SectionStrip({ children }: { children: ReactNode }) {
-  return <div className="resume-section-strip">{children}</div>
-}
-
 export function DefaultTemplate({ content, onChange }: DefaultTemplateProps) {
   const basics = findSection(content.sections, 'basics')
   const work = findSection(content.sections, 'work')
   const education = findSection(content.sections, 'education')
   const certificates = findSection(content.sections, 'certificates')
-  const customSections = content.sections.filter((s) => s.type === 'custom')
+  const sortableSections = getSortableSections(content.sections)
 
   const updateSection = (sectionId: string, updater: (s: ResumeSection) => ResumeSection) => {
     onChange({
@@ -74,32 +73,57 @@ export function DefaultTemplate({ content, onChange }: DefaultTemplateProps) {
     }))
   }
 
-  const sectionBlocks: ReactNode[] = [
-    <WorkBlock key="work" section={work} onChange={(s) => updateSection(work.id, () => s)} />,
-    <EducationBlock
-      key="education"
-      section={education}
-      onChange={(s) => updateSection(education.id, () => s)}
-    />,
-    <CertificatesBlock
-      key="certificates"
-      section={certificates}
-      onChange={(s) => updateSection(certificates.id, () => s)}
-    />,
-    ...customSections.map((section) => (
-      <CustomBlock
-        key={section.id}
-        section={section}
-        onChange={(s) => updateSection(section.id, () => s)}
-        onRemove={() =>
-          onChange({
-            ...content,
-            sections: content.sections.filter((s) => s.id !== section.id),
-          })
-        }
-      />
-    )),
-  ]
+  const renderSection = (section: ResumeSection, dragHandle: ReactNode) => {
+    switch (section.type) {
+      case 'work':
+        return (
+          <WorkBlock
+            section={section}
+            dragHandle={dragHandle}
+            onChange={(s) => updateSection(section.id, () => s)}
+          />
+        )
+      case 'education':
+        return (
+          <EducationBlock
+            section={section}
+            dragHandle={dragHandle}
+            onChange={(s) => updateSection(section.id, () => s)}
+          />
+        )
+      case 'certificates':
+        return (
+          <CertificatesBlock
+            section={section}
+            dragHandle={dragHandle}
+            onChange={(s) => updateSection(section.id, () => s)}
+          />
+        )
+      case 'custom':
+        return (
+          <CustomBlock
+            section={section}
+            dragHandle={dragHandle}
+            onChange={(s) => updateSection(section.id, () => s)}
+            onRemove={() =>
+              onChange({
+                ...content,
+                sections: content.sections.filter((s) => s.id !== section.id),
+              })
+            }
+          />
+        )
+      default:
+        return null
+    }
+  }
+
+  const handleSectionReorder = (activeId: string, overId: string) => {
+    onChange({
+      ...content,
+      sections: reorderResumeSections(content.sections, activeId, overId),
+    })
+  }
 
   return (
     <div
@@ -148,9 +172,16 @@ export function DefaultTemplate({ content, onChange }: DefaultTemplateProps) {
       </header>
 
       <div className="resume-sections">
-        {sectionBlocks.map((block, i) => (
-          <SectionStrip key={i}>{block}</SectionStrip>
-        ))}
+        <SortableSections
+          sectionIds={sortableSections.map((s) => s.id)}
+          onReorder={handleSectionReorder}
+        >
+          {sortableSections.map((section) => (
+            <SortableSectionStrip key={section.id} id={section.id}>
+              {(dragHandle) => renderSection(section, dragHandle)}
+            </SortableSectionStrip>
+          ))}
+        </SortableSections>
       </div>
     </div>
   )
@@ -180,14 +211,17 @@ function SectionHead({
   title,
   onAdd,
   extra,
+  dragHandle,
 }: {
   icon: ReactNode
   title: ReactNode
   onAdd?: () => void
   extra?: ReactNode
+  dragHandle?: ReactNode
 }) {
   return (
     <div className="resume-section-head">
+      {dragHandle}
       <span className="resume-section-icon">{icon}</span>
       <div className="resume-section-title">{title}</div>
       <div className="resume-section-actions">
@@ -227,13 +261,16 @@ function DateRange({
 function CertificatesBlock({
   section,
   onChange,
+  dragHandle,
 }: {
   section: CertificatesSection
   onChange: (s: CertificatesSection) => void
+  dragHandle?: ReactNode
 }) {
   return (
     <section className="resume-section">
       <SectionHead
+        dragHandle={dragHandle}
         icon={<IconCertificate />}
         title="证书"
         onAdd={() =>
@@ -274,9 +311,11 @@ function CertificatesBlock({
 function WorkBlock({
   section,
   onChange,
+  dragHandle,
 }: {
   section: WorkSection
   onChange: (s: WorkSection) => void
+  dragHandle?: ReactNode
 }) {
   const updateItem = (itemId: string, patch: Partial<WorkSection['items'][0]>) => {
     onChange({
@@ -288,6 +327,7 @@ function WorkBlock({
   return (
     <section className="resume-section">
       <SectionHead
+        dragHandle={dragHandle}
         icon={<IconWork />}
         title="工作经历"
         onAdd={() => onChange({ ...section, items: [...section.items, createEmptyWorkItem()] })}
@@ -341,9 +381,11 @@ function WorkBlock({
 function EducationBlock({
   section,
   onChange,
+  dragHandle,
 }: {
   section: EducationSection
   onChange: (s: EducationSection) => void
+  dragHandle?: ReactNode
 }) {
   const updateItem = (itemId: string, patch: Partial<EducationSection['items'][0]>) => {
     onChange({
@@ -355,6 +397,7 @@ function EducationBlock({
   return (
     <section className="resume-section">
       <SectionHead
+        dragHandle={dragHandle}
         icon={<IconEducation />}
         title="教育背景"
         onAdd={() => onChange({ ...section, items: [...section.items, createEmptyEducationItem()] })}
@@ -403,14 +446,17 @@ function CustomBlock({
   section,
   onChange,
   onRemove,
+  dragHandle,
 }: {
   section: CustomSection
   onChange: (s: CustomSection) => void
   onRemove: () => void
+  dragHandle?: ReactNode
 }) {
   return (
     <section className="resume-section">
       <SectionHead
+        dragHandle={dragHandle}
         icon={<IconCustom />}
         title={
           <InlineField

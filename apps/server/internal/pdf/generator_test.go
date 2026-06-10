@@ -71,3 +71,20 @@ func TestFormatBodyRendersHTMLInTemplate(t *testing.T) {
 		t.Fatalf("expected rendered paragraph in output:\n%s", out)
 	}
 }
+
+func TestOrderSectionsPreservesUserOrder(t *testing.T) {
+	sections := []section{
+		{ID: "basics", Type: "basics"},
+		{ID: "cert-1", Type: "certificates"},
+		{ID: "work-1", Type: "work"},
+		{ID: "edu-1", Type: "education"},
+	}
+	ordered := orderSections(sections)
+	if len(ordered) != 4 {
+		t.Fatalf("expected 4 sections, got %d", len(ordered))
+	}
+	if ordered[0].Type != "basics" || ordered[1].Type != "certificates" ||
+		ordered[2].Type != "work" || ordered[3].Type != "education" {
+		t.Fatalf("unexpected order: %+v", ordered)
+	}
+}

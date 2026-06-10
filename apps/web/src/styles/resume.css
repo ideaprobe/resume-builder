@@ -286,6 +286,46 @@
   border-left: 3px solid var(--r-accent);
 }
 
+.resume-section-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.75rem;
+  margin: 0 -0.15rem 0 -0.35rem;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--r-text-muted);
+  cursor: grab;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  touch-action: none;
+}
+
+.resume-section-strip:hover .resume-section-drag-handle,
+.resume-section-strip--dragging .resume-section-drag-handle,
+.resume-section-drag-handle:focus-visible {
+  opacity: 1;
+}
+
+.resume-section-drag-handle:hover {
+  color: var(--r-accent);
+  background: var(--r-hover);
+}
+
+.resume-section-drag-handle:active {
+  cursor: grabbing;
+}
+
+.resume-section-strip--dragging {
+  position: relative;
+  z-index: 1;
+  opacity: 0.92;
+}
+
 .resume-section-icon {
   display: flex;
   align-items: center;

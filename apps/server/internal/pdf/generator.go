@@ -233,27 +233,18 @@ func waitForFonts() chromedp.ActionFunc {
 }
 
 func orderSections(sections []section) []section {
-	var basics, work, education, certificates, customs []section
+	var basics []section
+	rest := make([]section, 0, len(sections))
 	for _, s := range sections {
-		switch s.Type {
-		case "basics":
+		if s.Type == "basics" {
 			basics = append(basics, s)
-		case "work":
-			work = append(work, s)
-		case "education":
-			education = append(education, s)
-		case "certificates":
-			certificates = append(certificates, s)
-		case "custom":
-			customs = append(customs, s)
+		} else {
+			rest = append(rest, s)
 		}
 	}
 	out := make([]section, 0, len(sections))
 	out = append(out, basics...)
-	out = append(out, work...)
-	out = append(out, education...)
-	out = append(out, certificates...)
-	out = append(out, customs...)
+	out = append(out, rest...)
 	return out
 }
 

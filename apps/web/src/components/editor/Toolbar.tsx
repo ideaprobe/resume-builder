@@ -108,7 +108,7 @@ export function Toolbar({
       <div className="mt-auto">
         <div className="alert alert-info alert-soft text-xs">
           <span>
-            单击编辑 · 单行 Enter 保存 · 多行 Ctrl+Enter 保存 · 点击头像上传
+            单击编辑 · 拖拽区块标题旁把手排序 · 点击头像上传
           </span>
         </div>
       </div>
