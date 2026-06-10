@@ -81,8 +81,9 @@ export function SortableSectionStrip({ id, children }: SortableSectionStripProps
     id,
   })
 
+  // 仅用 translate，避免 Transform 附带 scale 导致拖拽时文字被放大
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Translate.toString(transform),
     transition,
   }
 

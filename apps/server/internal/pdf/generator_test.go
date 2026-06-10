@@ -70,6 +70,9 @@ func TestFormatBodyRendersHTMLInTemplate(t *testing.T) {
 	if !strings.Contains(out, "<p>321321321</p>") {
 		t.Fatalf("expected rendered paragraph in output:\n%s", out)
 	}
+	if !strings.Contains(out, `class="resume-meta-icon"`) {
+		t.Fatalf("expected meta icons in template output:\n%s", out)
+	}
 }
 
 func TestOrderSectionsPreservesUserOrder(t *testing.T) {
