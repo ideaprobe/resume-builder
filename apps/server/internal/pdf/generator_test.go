@@ -57,7 +57,7 @@ func TestFormatBodyRendersHTMLInTemplate(t *testing.T) {
 		PrintCSS:   gen.printCSS,
 		ResumeCSS:  gen.resumeCSS,
 	}
-	if err := gen.tmpl.Execute(&htmlBuf, htmlData); err != nil {
+	if err := gen.templateFor("default").Execute(&htmlBuf, htmlData); err != nil {
 		t.Fatal(err)
 	}
 	out := htmlBuf.String()

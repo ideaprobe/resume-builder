@@ -6,6 +6,25 @@ import (
 	"strings"
 )
 
+const (
+	linearOverlayLight = "linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 45%, rgba(0,0,0,0.14) 100%)"
+	linearOverlayDark  = "linear-gradient(135deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.12) 55%, rgba(255,255,255,0.08) 100%)"
+)
+
+func isMeshGradient(t themeData) bool {
+	if t.GradientStyle == "mesh" {
+		return true
+	}
+	return strings.Contains(t.Gradient, "radial-gradient")
+}
+
+func resolveRegionalGradient(t themeData) string {
+	if t.Gradient != "" && strings.Contains(t.Gradient, "radial-gradient") {
+		return t.Gradient
+	}
+	return ""
+}
+
 func resolveThemeStyle(t themeData) string {
 	heroTone := t.HeroTone
 	if heroTone == "" {
@@ -41,6 +60,8 @@ func resolveThemeStyle(t themeData) string {
 		accent = "#5b5bd6"
 	}
 
+	mesh := isMeshGradient(t)
+
 	vars := map[string]string{
 		"--resume-gradient": gradient,
 		"--r-accent":        accent,
@@ -50,14 +71,20 @@ func resolveThemeStyle(t themeData) string {
 		"--r-focus":         accentAlpha(accent, 0.12),
 		"--r-on-gradient":   heroText,
 	}
+	if mesh {
+		regional := resolveRegionalGradient(t)
+		if regional != "" {
+			vars["--resume-regional-gradient"] = regional
+		}
+	}
 
-	if heroTone == "light" {
+	if heroTone == "light" && !mesh {
 		vars["--r-on-gradient-muted"] = heroTextMuted
 		vars["--r-on-gradient-soft"] = "rgba(255, 255, 255, 0.16)"
 		vars["--r-on-gradient-pill"] = "rgba(255, 255, 255, 0.22)"
 		vars["--r-on-gradient-pill-border"] = "rgba(255, 255, 255, 0.38)"
 		vars["--r-on-gradient-shadow"] = "0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.22)"
-		vars["--r-hero-overlay"] = "linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 45%, rgba(0,0,0,0.14) 100%)"
+		vars["--r-hero-overlay"] = linearOverlayLight
 		vars["--r-meta-icon-color"] = heroText
 		vars["--r-pill-shadow"] = "0 1px 3px rgba(0, 0, 0, 0.2)"
 	} else {
@@ -66,7 +93,9 @@ func resolveThemeStyle(t themeData) string {
 		vars["--r-on-gradient-pill"] = "rgba(255, 255, 255, 0.62)"
 		vars["--r-on-gradient-pill-border"] = "rgba(255, 255, 255, 0.75)"
 		vars["--r-on-gradient-shadow"] = "0 1px 2px rgba(255, 255, 255, 0.85)"
-		vars["--r-hero-overlay"] = "linear-gradient(135deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.12) 55%, rgba(255,255,255,0.08) 100%)"
+		if !mesh {
+			vars["--r-hero-overlay"] = linearOverlayDark
+		}
 		vars["--r-meta-icon-color"] = heroTextMuted
 		vars["--r-pill-shadow"] = "0 1px 2px rgba(15, 23, 42, 0.06)"
 	}

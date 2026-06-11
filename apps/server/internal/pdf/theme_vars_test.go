@@ -2,6 +2,19 @@ package pdf
 
 import "testing"
 
+func TestResolveThemeStyleMeshRegionalGradient(t *testing.T) {
+	regional := "radial-gradient(ellipse 400px 280px at 10% 14%, rgba(253, 230, 138, 0.48) 0%, transparent 70%)"
+	style := resolveThemeStyle(themeData{
+		Gradient:      regional,
+		GradientStyle: "mesh",
+		Accent:        "#b45309",
+		HeroTone:      "dark",
+	})
+	if !contains(style, "--resume-regional-gradient:"+regional) {
+		t.Fatalf("expected regional gradient var, got: %s", style)
+	}
+}
+
 func TestResolveThemeStyleMatchesAccentAlpha(t *testing.T) {
 	style := resolveThemeStyle(themeData{
 		Gradient:      "linear-gradient(135deg, #881337 0%, #be123c 50%, #e11d48 100%)",

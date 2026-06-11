@@ -26,7 +26,7 @@ const (
 )
 
 type Generator struct {
-	tmpl      *template.Template
+	templates map[string]*template.Template
 	fontsCSS  string
 	printCSS  string
 	resumeCSS string
@@ -40,10 +40,11 @@ type resumeData struct {
 
 type exportHTMLData struct {
 	resumeData
-	ThemeStyle string
-	FontsCSS   string
-	PrintCSS   string
-	ResumeCSS  string
+	ThemeStyle  string
+	MeshAccent  bool
+	FontsCSS    string
+	PrintCSS    string
+	ResumeCSS   string
 }
 
 type themeData struct {
@@ -53,6 +54,7 @@ type themeData struct {
 	HeroTone        string `json:"heroTone"`
 	HeroText        string `json:"heroText"`
 	HeroTextMuted   string `json:"heroTextMuted"`
+	GradientStyle   string `json:"gradientStyle"`
 }
 
 type section struct {
@@ -64,16 +66,23 @@ type section struct {
 }
 
 func NewGenerator(templatesDir string) (*Generator, error) {
-	path := filepath.Join(templatesDir, "resume.html")
 	funcs := template.FuncMap{
 		"add":        func(a, b int) int { return a + b },
 		"mod":        func(a, b int) int { return a % b },
 		"esc":        html.EscapeString,
 		"formatBody": formatBodyHTML,
 	}
-	tmpl, err := template.New("resume.html").Funcs(funcs).ParseFiles(path)
-	if err != nil {
-		return nil, err
+	templates := map[string]*template.Template{}
+	for id, file := range map[string]string{
+		"default":     "resume.html",
+		"left-column": "resume-left-column.html",
+	} {
+		path := filepath.Join(templatesDir, file)
+		tmpl, err := template.New(file).Funcs(funcs).ParseFiles(path)
+		if err != nil {
+			return nil, fmt.Errorf("parse %s: %w", file, err)
+		}
+		templates[id] = tmpl
 	}
 
 	fontsCSS, printCSS, resumeCSS, err := loadExportCSS(templatesDir)
@@ -82,11 +91,18 @@ func NewGenerator(templatesDir string) (*Generator, error) {
 	}
 
 	return &Generator{
-		tmpl:      tmpl,
+		templates: templates,
 		fontsCSS:  fontsCSS,
 		printCSS:  printCSS,
 		resumeCSS: resumeCSS,
 	}, nil
+}
+
+func (g *Generator) templateFor(id string) *template.Template {
+	if id == "left-column" {
+		return g.templates["left-column"]
+	}
+	return g.templates["default"]
 }
 
 func loadExportCSS(templatesDir string) (fonts, print, resume string, err error) {
@@ -119,15 +135,16 @@ func (g *Generator) Generate(content json.RawMessage) ([]byte, error) {
 	data.Sections = orderSections(data.Sections)
 
 	htmlData := exportHTMLData{
-		resumeData: data,
-		ThemeStyle: resolveThemeStyle(data.Theme),
-		FontsCSS:   g.fontsCSS,
-		PrintCSS:   g.printCSS,
-		ResumeCSS:  g.resumeCSS,
+		resumeData:  data,
+		ThemeStyle:  resolveThemeStyle(data.Theme),
+		MeshAccent:  isMeshGradient(data.Theme),
+		FontsCSS:    g.fontsCSS,
+		PrintCSS:    g.printCSS,
+		ResumeCSS:   g.resumeCSS,
 	}
 
 	var htmlBuf bytes.Buffer
-	if err := g.tmpl.Execute(&htmlBuf, htmlData); err != nil {
+	if err := g.templateFor(data.Template).Execute(&htmlBuf, htmlData); err != nil {
 		return nil, err
 	}
 

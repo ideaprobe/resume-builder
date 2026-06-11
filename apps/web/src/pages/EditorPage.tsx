@@ -5,8 +5,9 @@ import { useQuery } from '@tanstack/react-query'
 import { exportResumePdf, fetchResume, updateResume } from '../api/resumes'
 import { Toolbar } from '../components/editor/Toolbar'
 import { SaveFlushProvider } from '../context/SaveFlushContext'
-import { DefaultTemplate } from '../templates/default'
+import { ResumeTemplate, type ResumeTemplateId } from '../templates'
 import { useAutoSave } from '../hooks/useAutoSave'
+import { useEditorHistory } from '../hooks/useEditorHistory'
 import { useEditorStore } from '../store/editorStore'
 import { createMachaoSampleContent, MACHAO_SAMPLE_TITLE } from '../data/sampleMachao'
 import { createEmptyCustomSection, normalizeBasicsFields, normalizeTheme } from '../types/resume'
@@ -43,6 +44,39 @@ export function EditorPage() {
     }
   }, [data, setResume])
 
+  const [exporting, setExporting] = useState(false)
+
+  const { canUndo, canRedo, undo, redo, resetHistory } = useEditorHistory(
+    title,
+    content,
+    setTitle,
+    setContent,
+  )
+
+  useEffect(() => {
+    if (!id || !content) return
+    resetHistory({ title, content })
+    // 仅在切换简历时重置历史
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (exporting) return
+      const mod = e.metaKey || e.ctrlKey
+      if (!mod) return
+      if (e.key === 'z' && !e.shiftKey) {
+        e.preventDefault()
+        undo()
+      } else if ((e.key === 'z' && e.shiftKey) || e.key === 'y') {
+        e.preventDefault()
+        redo()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [exporting, undo, redo])
+
   const savePayload = useMemo(() => {
     if (!content) return null
     return { title, content }
@@ -57,8 +91,6 @@ export function EditorPage() {
   )
 
   const { status: saveStatus, flush, setPaused } = useAutoSave(savePayload, saveFn)
-
-  const [exporting, setExporting] = useState(false)
 
   const handleExport = async () => {
     if (!id || exporting) return
@@ -94,8 +126,15 @@ export function EditorPage() {
   const handleLoadSample = () => {
     if (!content) return
     if (!confirm('将用「马超」示例数据覆盖当前简历内容，是否继续？')) return
+    const next = createMachaoSampleContent()
     setTitle(MACHAO_SAMPLE_TITLE)
-    setContent(createMachaoSampleContent())
+    setContent(next)
+    resetHistory({ title: MACHAO_SAMPLE_TITLE, content: next })
+  }
+
+  const handleTemplateChange = (templateId: ResumeTemplateId) => {
+    if (!content) return
+    setContent({ ...content, template: templateId })
   }
 
   if (isLoading) {
@@ -136,6 +175,28 @@ export function EditorPage() {
           />
         </div>
         <div className="flex-none items-center flex gap-2 sm:gap-3">
+          <div className="join">
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm join-item px-2.5"
+              disabled={exporting || !canUndo}
+              onClick={undo}
+              title="撤销 (Ctrl+Z)"
+              aria-label="撤销"
+            >
+              ↶
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm join-item px-2.5"
+              disabled={exporting || !canRedo}
+              onClick={redo}
+              title="重做 (Ctrl+Shift+Z)"
+              aria-label="重做"
+            >
+              ↷
+            </button>
+          </div>
           {!exporting &&
             (saveStatus === 'saving' || saveStatus === 'saved' || saveStatus === 'error') && (
               <span
@@ -174,7 +235,9 @@ export function EditorPage() {
       <div className="flex flex-1 overflow-hidden relative" inert={exporting ? true : undefined}>
         <Toolbar
           theme={content.theme}
+          templateId={content.template}
           onThemeChange={updateTheme}
+          onTemplateChange={handleTemplateChange}
           onAddCustomSection={handleAddCustomSection}
           onLoadSample={handleLoadSample}
           disabled={exporting}
@@ -184,7 +247,7 @@ export function EditorPage() {
           aria-busy={exporting}
         >
           <SaveFlushProvider flush={flush}>
-            <DefaultTemplate content={content} onChange={setContent} />
+            <ResumeTemplate content={content} onChange={setContent} />
           </SaveFlushProvider>
         </main>
 

@@ -44,6 +44,7 @@
 
 /* 白色简历页 */
 .resume-sheet {
+  position: relative;
   min-height: 297mm;
   padding: 0 0 2.5rem;
   background: #ffffff;
@@ -52,6 +53,101 @@
     0 1px 3px rgba(0, 0, 0, 0.04),
     0 8px 32px rgba(30, 30, 47, 0.1);
   overflow: hidden;
+}
+
+/* Mesh 白底 + 区域装饰色块 */
+.resume-sheet-bg {
+  display: none;
+}
+
+.resume-sheet--mesh-accent .resume-sheet-bg {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: #fcfcfd;
+  background-image: var(--resume-regional-gradient);
+  pointer-events: none;
+}
+
+/* 中心微提亮，正文区更干净，边缘色块更自然 */
+.resume-sheet--mesh-accent .resume-sheet-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 88% 72% at 50% 44%, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0.38) 42%, transparent 76%),
+    radial-gradient(ellipse 120% 90% at 50% 100%, rgba(255, 255, 255, 0.55) 0%, transparent 58%);
+  pointer-events: none;
+}
+
+.resume-sheet--mesh-accent > :not(.resume-sheet-bg) {
+  position: relative;
+  z-index: 1;
+}
+
+.resume-sheet--mesh-accent .resume-hero-bg,
+.resume-sheet--mesh-accent .resume-sidebar-bg {
+  display: none;
+}
+
+.resume-sheet--mesh-accent .resume-hero-info,
+.resume-sheet--mesh-accent .resume-sidebar {
+  color: var(--r-text-secondary);
+  text-shadow: none;
+}
+
+.resume-sheet--mesh-accent .resume-hero .inline-field.resume-t-display,
+.resume-sheet--mesh-accent .resume-hero .inline-field.resume-t-headline,
+.resume-sheet--mesh-accent .resume-sidebar .resume-t-display,
+.resume-sheet--mesh-accent .resume-sidebar .resume-t-headline,
+.resume-sheet--mesh-accent .resume-sidebar .inline-field.resume-t-display,
+.resume-sheet--mesh-accent .resume-sidebar .inline-field.resume-t-headline {
+  color: var(--r-text);
+  text-shadow: none;
+}
+
+.resume-sheet--mesh-accent .resume-meta-item {
+  color: var(--r-text-secondary);
+  background: rgba(255, 255, 255, 0.72);
+  border-color: var(--r-accent-border);
+  text-shadow: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 1px 2px rgba(30, 30, 47, 0.04);
+}
+
+.resume-sheet--mesh-accent .resume-meta-icon {
+  color: var(--r-accent);
+}
+
+.resume-sheet--mesh-accent .resume-hero .inline-field:hover,
+.resume-sheet--mesh-accent .resume-sidebar .inline-field:hover {
+  background: var(--r-hover);
+}
+
+.resume-sheet--mesh-accent .resume-hero .inline-field:focus,
+.resume-sheet--mesh-accent .resume-hero .inline-field.resume-t-display:focus,
+.resume-sheet--mesh-accent .resume-hero .inline-field.resume-t-headline:focus,
+.resume-sheet--mesh-accent .resume-sidebar .inline-field:focus {
+  background: var(--r-focus);
+  box-shadow: 0 0 0 1px rgba(91, 110, 234, 0.3);
+  color: var(--r-text);
+}
+
+.resume-sheet--mesh-accent .resume-avatar {
+  border-color: #ffffff;
+  box-shadow: 0 4px 16px rgba(30, 30, 47, 0.1);
+}
+
+.resume-sheet--mesh-accent .resume-avatar-placeholder,
+.resume-sheet--mesh-accent .resume-avatar-remove {
+  color: var(--r-text-muted);
+  text-shadow: none;
+}
+
+.resume-sheet--mesh-accent .resume-avatar-remove:hover {
+  color: var(--r-accent);
 }
 
 /* ── 页眉：渐变横幅 + 横向布局 ── */
@@ -284,6 +380,52 @@
   margin-bottom: 1.25rem;
   padding-left: 0.85rem;
   border-left: 3px solid var(--r-accent);
+}
+
+.resume-section-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.75rem;
+  margin: 0 -0.15rem 0 -0.35rem;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--r-text-muted);
+  cursor: grab;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  touch-action: none;
+}
+
+.resume-section-strip:hover .resume-section-drag-handle,
+.resume-section-strip--dragging .resume-section-drag-handle,
+.resume-section-drag-handle:focus-visible {
+  opacity: 1;
+}
+
+.resume-section-drag-handle:hover {
+  color: var(--r-accent);
+  background: var(--r-hover);
+}
+
+.resume-section-drag-handle:active {
+  cursor: grabbing;
+}
+
+.resume-section-strip--dragging {
+  position: relative;
+  z-index: 1;
+  opacity: 0.92;
+  user-select: none;
+}
+
+.resume-section-strip--dragging .inline-field,
+.resume-section-strip--dragging .inline-rich-text-preview {
+  pointer-events: none;
 }
 
 .resume-section-icon {
@@ -738,4 +880,95 @@
   color: var(--r-text-muted);
   padding: 0.5rem 0 0.25rem 1.1rem;
   margin-left: 0.35rem;
+}
+
+/* ── 左栏布局模板 ── */
+.resume-layout-left {
+  display: flex;
+  align-items: stretch;
+  min-height: 297mm;
+}
+
+.resume-sidebar {
+  position: relative;
+  width: 34%;
+  flex-shrink: 0;
+  padding: 2rem 1.35rem 2rem;
+  color: var(--r-on-gradient-muted);
+  text-shadow: var(--r-on-gradient-shadow, none);
+  overflow: hidden;
+}
+
+.resume-sidebar-bg {
+  position: absolute;
+  inset: 0;
+  background: var(--resume-gradient);
+}
+
+.resume-sidebar-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(
+    --r-hero-overlay,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.12) 55%, rgba(255, 255, 255, 0.08) 100%)
+  );
+}
+
+.resume-sidebar-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.resume-sidebar .resume-avatar-wrap,
+.resume-sidebar-inner > .resume-pdf-avatar,
+.resume-sidebar-inner > .resume-pdf-avatar-empty {
+  align-self: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.resume-sidebar .resume-t-display,
+.resume-sidebar .resume-t-headline,
+.resume-sidebar .inline-field.resume-t-display,
+.resume-sidebar .inline-field.resume-t-headline {
+  width: 100%;
+  color: var(--r-on-gradient-muted);
+  text-shadow: var(--r-on-gradient-shadow, none);
+}
+
+.resume-t-display--sidebar {
+  margin-top: 1rem;
+  font-size: 1.85em;
+}
+
+.resume-t-headline--sidebar {
+  font-size: 1em;
+}
+
+.resume-t-meta--sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  margin-top: 1rem;
+  gap: 0.45rem;
+}
+
+.resume-t-meta--sidebar .resume-meta-item {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.resume-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.resume-sections--main {
+  padding: 1.75rem 2rem 2rem;
 }

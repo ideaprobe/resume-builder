@@ -4,7 +4,7 @@ import { normalizeBasicsFields, resolveThemeVars, hasRegionalAccent } from '../t
 import { BasicsEditor } from './shared/BasicsFields'
 import { ResumeSectionList } from './shared/SectionList'
 
-interface DefaultTemplateProps {
+interface LeftColumnTemplateProps {
   content: ResumeContent
   onChange: (content: ResumeContent) => void
 }
@@ -13,7 +13,7 @@ function findSection<T extends ResumeSection['type']>(sections: ResumeSection[],
   return sections.find((s) => s.type === type) as Extract<ResumeSection, { type: T }> | undefined
 }
 
-export function DefaultTemplate({ content, onChange }: DefaultTemplateProps) {
+export function LeftColumnTemplate({ content, onChange }: LeftColumnTemplateProps) {
   const basics = findSection(content.sections, 'basics')
   const work = findSection(content.sections, 'work')
   const education = findSection(content.sections, 'education')
@@ -38,18 +38,22 @@ export function DefaultTemplate({ content, onChange }: DefaultTemplateProps) {
 
   return (
     <div
-      className={`resume-canvas resume-sheet w-[210mm] mx-auto${meshAccent ? ' resume-sheet--mesh-accent' : ''}`}
+      className={`resume-canvas resume-sheet resume-layout-left w-[210mm] mx-auto${meshAccent ? ' resume-sheet--mesh-accent' : ''}`}
       style={themeVars as CSSProperties}
     >
       <div className="resume-sheet-bg" aria-hidden />
-      <header className="resume-hero">
-        <div className="resume-hero-bg" aria-hidden />
-        <div className="resume-hero-content">
-          <BasicsEditor fields={fields} onFieldChange={setBasic} layout="hero" />
+      <aside className="resume-sidebar">
+        <div className="resume-sidebar-bg" aria-hidden />
+        <div className="resume-sidebar-inner">
+          <BasicsEditor fields={fields} onFieldChange={setBasic} layout="sidebar" />
         </div>
-      </header>
+      </aside>
 
-      <ResumeSectionList content={content} onChange={onChange} className="resume-sections" />
+      <ResumeSectionList
+        content={content}
+        onChange={onChange}
+        className="resume-main resume-sections resume-sections--main"
+      />
     </div>
   )
 }

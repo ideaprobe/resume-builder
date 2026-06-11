@@ -1,7 +1,18 @@
 # Resume Builder 设计文档
 
 > 日期：2026-06-09  
-> 状态：待实现
+> 状态：**部分实现**（最后核对：2026-06-10）
+
+### 实现状态图例
+
+| 标记 | 含义 |
+|------|------|
+| ✅ | 已实现，与规格一致或基本满足 |
+| ⚠️ | 部分实现 / 实现方式与规格有差异 |
+| ❌ | 未实现 |
+| 🆕 | 规格标为「不包含」，但代码中已实现 |
+
+---
 
 ## 概述
 
@@ -11,17 +22,17 @@
 
 ## 需求摘要
 
-| 维度 | 决定 |
-|------|------|
-| 架构 | Go 服务端 + React 前端 |
-| 包管理 | pnpm workspace |
-| 账号 | 数据库预置账号，密码登录，无注册 |
-| 认证 | JWT 存 **localStorage**，请求头 `Authorization: Bearer <token>`，**不使用 Cookie** |
-| 简历管理 | 每人多份独立简历，列表切换 |
-| 编辑体验 | 所见即所得，直接点文字编辑，无弹窗 |
-| 区块 | 固定核心（基本信息、工作经历、教育、技能）+ 可自定义新区块；条目可增删复制 |
-| 样式 | 1 个通用模板；整页背景色（预设色板） |
-| 导出 | 服务端 PDF（chromedp） |
+| 维度 | 决定 | 状态 |
+|------|------|------|
+| 架构 | Go 服务端 + React 前端 | ✅ |
+| 包管理 | pnpm workspace | ✅ `pnpm-workspace.yaml` |
+| 账号 | 数据库预置账号，密码登录，无注册 | ✅ `migrations/001_init.sql` |
+| 认证 | JWT 存 **localStorage**，`Authorization: Bearer` | ✅ `api/client.ts`, `middleware/auth.go` |
+| 简历管理 | 每人多份独立简历，列表切换 | ✅ `ResumeListPage.tsx` |
+| 编辑体验 | 所见即所得，直接点文字编辑，无弹窗 | ⚠️ 自研 `InlineField`，非 `@inline-edit/react` |
+| 区块 | 固定核心 + 可自定义新区块；条目可增删复制 | ✅；`skills` 已改为 **`certificates`** |
+| 样式 | 1 个通用模板；整页背景色（预设色板） | ⚠️ 10 套**渐变页眉**预设，非 5 色平面背景 |
+| 导出 | 服务端 PDF（chromedp） | ✅ `internal/pdf/generator.go` |
 
 ## 架构
 
@@ -31,299 +42,251 @@
 │  pnpm       │                            │  API Server  │         │  JSONB     │
 └─────────────┘                            └──────────────┘         └────────────┘
        │                                           │
-       │  简历模板 + @inline-edit/react             │  chromedp
+       │  简历模板 + 自研内联编辑 + TipTap            │  chromedp
        └───────────────────────────────────────────┘  HTML → PDF
 ```
 
 ### 技术选型
 
-| 层 | 选型 | 职责 |
-|----|------|------|
-| 前端 | React 19 + TypeScript + Vite + Tailwind CSS | 登录、简历列表、编辑器、导出 |
-| 内联编辑 | `@inline-edit/react` | 字段级所见即所得，双击/聚焦即编辑 |
-| 状态 | Zustand（编辑器）+ TanStack Query（服务端数据） | 本地编辑状态与服务端同步 |
-| 后端 | Go 1.22+ / Gin | 认证、CRUD、PDF 生成 |
-| 数据库 | PostgreSQL 16 | users、resumes 表 |
-| 迁移 | golang-migrate 或 goose | 数据库版本管理 |
-| 认证 | JWT + bcrypt | 无注册，账号 DB 预置 |
-| PDF | chromedp | HTML 渲染为 A4 PDF |
-| 部署 | Docker Compose | 本地一键启动 |
+| 层 | 选型 | 职责 | 状态 |
+|----|------|------|------|
+| 前端 | React 19 + TypeScript + Vite + Tailwind CSS | 登录、简历列表、编辑器、导出 | ✅ |
+| 内联编辑 | ~~`@inline-edit/react`~~ → 自研 `InlineField` + TipTap | 字段级所见即所得 | ⚠️ 见下文 |
+| 状态 | Zustand（编辑器）+ TanStack Query（服务端数据） | 本地编辑状态与服务端同步 | ✅ |
+| 后端 | Go 1.22+ / Gin | 认证、CRUD、PDF 生成 | ✅ |
+| 数据库 | PostgreSQL 16 | users、resumes 表 | ✅ |
+| 迁移 | ~~golang-migrate / goose~~ → Docker 挂载 SQL | 数据库版本管理 | ⚠️ `001_init.sql` 手动初始化 |
+| 认证 | JWT + bcrypt | 无注册，账号 DB 预置 | ✅ |
+| PDF | chromedp | HTML 渲染为 A4 PDF | ✅ |
+| 部署 | Docker Compose | 本地一键启动 | ⚠️ 仅 PostgreSQL 容器，应用需本地启动 |
 
 ### 内联编辑组件说明
 
 没有「装上去就是简历编辑器」的现成包。采用拼装方案：
 
-- **单行字段**（姓名、职位、公司等）：`@inline-edit/react`
-- **多行字段**（工作描述等）：同库 Textarea 模式
-- **区块增删复制**：自写逻辑，操作 JSON 数组
-- **背景色**：自写色板组件，修改 `content.theme.backgroundColor`
-- **简历模板**：自写 React 组件（`templates/default.tsx`）
+| 方案 | 规格 | 实际 | 状态 |
+|------|------|------|------|
+| 单行字段 | `@inline-edit/react` | `InlineField.tsx`（`<input>` 原地编辑） | ⚠️ |
+| 多行字段 | 同库 Textarea 模式 | TipTap `InlineRichText.tsx`（工作描述、自定义区块） | 🆕 超出规格 |
+| 区块增删复制 | 自写逻辑 | `ItemActions.tsx` + 各 `*Block` | ✅ |
+| 背景色 | 色板改 `theme.backgroundColor` | 渐变预设 `THEME_PRESETS` + `Toolbar.tsx` | ⚠️ |
+| 简历模板 | `templates/default.tsx` | 同路径 | ✅ |
 
 参考项目（不直接依赖）：Reactive Resume（数据模型）、Reyzume（编辑交互）。
 
-## 认证方案
+## 认证方案 ✅
 
 ### 流程
 
-1. `POST /api/auth/login` 校验用户名密码，返回 `{ token, user }`
-2. 前端将 `token` 存入 `localStorage`（key: `auth_token`）
-3. 后续请求在 Header 携带 `Authorization: Bearer <token>`
-4. `POST /api/auth/logout` 仅前端清除 localStorage（服务端无状态 JWT 可不实现黑名单）
-5. Token 过期（建议 7 天）→ 401 → 前端跳转登录页
+| 步骤 | 状态 | 实现位置 |
+|------|------|----------|
+| `POST /api/auth/login` → `{ token, user }` | ✅ | `handler/auth.go` |
+| token 存入 `localStorage`（`auth_token`） | ✅ | `api/client.ts` |
+| Header `Authorization: Bearer <token>` | ✅ | `api/client.ts` |
+| `POST /api/auth/logout` 前端清除 | ✅ | `ResumeListPage.tsx` `clearToken()`（无服务端路由，符合规格） |
+| Token 过期 401 → 跳转登录 | ✅ | `api/client.ts` |
 
 ### 安全注意
 
-- localStorage 易受 XSS 攻击，前端需避免注入风险（React 默认转义 + 不渲染原始 HTML）
-- 不使用 httpOnly Cookie，因此 CSRF 风险较低，但仍需校验 CORS
+- localStorage XSS：React 转义 + 富文本经 DOMPurify（`sanitizeHtml.ts`）✅
+- 无 httpOnly Cookie，CORS 校验 ⚠️ 基础实现
 
 ## 页面结构
 
-### 路由
+### 路由 ✅
 
-| 路径 | 页面 | 说明 |
-|------|------|------|
-| `/login` | 登录页 | 账号 + 密码，无注册入口 |
-| `/` | 简历列表 | 当前用户所有简历，新建 / 删除 / 进入编辑 |
-| `/editor/:id` | 编辑器 | 左侧工具栏 + 右侧 A4 简历画布 |
+| 路径 | 页面 | 状态 | 文件 |
+|------|------|------|------|
+| `/login` | 登录页 | ✅ | `pages/LoginPage.tsx` |
+| `/` | 简历列表 | ✅ | `pages/ResumeListPage.tsx` |
+| `/editor/:id` | 编辑器 | ✅ | `pages/EditorPage.tsx` |
 
-### 编辑器布局
+### 编辑器布局 ✅
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  ← 返回   简历名称(可编辑)          [保存状态]  [导出 PDF]  │
+│  ← 返回   简历名称(可编辑)          [保存状态]  [导出 PDF]  │  ✅ EditorPage header
 ├──────────┬───────────────────────────────────────────────┤
-│  工具栏   │                                               │
-│          │         A4 简历画布（直接点字编辑）              │
-│ 背景色    │                                               │
-│ ○白 ○灰  │   张三  ·  前端工程师                           │
-│ ○蓝 ...  │   ─────────────────                           │
-│          │   工作经历                          [+ 添加]    │
-│ 区块管理  │   ┌ 字节跳动 · 高级工程师 ───── [复制][删除]  │
-│ + 自定义  │   │ 2021 - 至今                                │
-│          │   │ 负责...                                    │
-│          │   └ ...                                        │
-│          │   教育背景 / 技能 / 自定义区块 ...               │
+│  工具栏   │         A4 简历画布（直接点字编辑）              │  ✅ Toolbar + default.tsx
+│ 页眉配色  │   姓名 · 职位 · 联系方式                        │
+│ 预设渐变  │   工作经历 / 教育 / 证书 / 自定义 ...            │
+│ + 自定义  │   [拖拽把手排序区块] 🆕                         │
+│ 加载示例  │   [头像上传] 🆕                                 │
 └──────────┴───────────────────────────────────────────────┘
 ```
 
 ### 交互要点
 
-- 画布内文字使用 `@inline-edit/react`，双击或聚焦即编辑，无弹窗
-- 可重复区块右侧悬浮 `[+ 添加]`、`[复制]`、`[删除]`
-- 自定义区块：工具栏「+ 自定义区块」→ 输入标题 → 画布新增一节
-- 背景色：工具栏色板点击即生效
-- 自动保存：编辑后 1s 防抖，右上角显示「保存中 / 已保存 / 保存失败」
+| 交互 | 状态 | 说明 |
+|------|------|------|
+| 画布内点字即编辑，无弹窗 | ✅ | `InlineField` / `InlineRichText` |
+| 条目 `[+ 添加]`、`[复制]`、`[删除]` | ✅ | `SectionHead` + `ItemActions` |
+| 工具栏「+ 自定义区块」 | ✅ | `Toolbar.tsx` → `createEmptyCustomSection` |
+| 背景/页眉配色点击即生效 | ✅ | `THEME_PRESETS` 色板 |
+| 自动保存 1s 防抖 + 状态徽章 | ✅ | `useAutoSave.ts` + `EditorPage.tsx` |
+| 导出前静默保存 + 导出中遮罩 | 🆕 | `flush({ silent: true })` |
+| 区块拖拽排序 | 🆕 | `SortableSections.tsx`（@dnd-kit） |
+| 加载马超示例数据 | 🆕 | `data/sampleMachao.ts` |
 
 ## 数据模型
 
-### `users` 表
+### `users` 表 ✅
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | UUID | 主键 |
-| username | VARCHAR UNIQUE | 登录名 |
-| password_hash | VARCHAR | bcrypt |
-| created_at | TIMESTAMPTZ | 创建时间 |
+`apps/server/migrations/001_init.sql` — 含 demo 账号。
 
-账号由管理员直接 INSERT，无注册接口。
+### `resumes` 表 ✅
 
-### `resumes` 表
+`content` JSONB，`handler/resume.go` + `repository/resume.go`。
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | UUID | 主键 |
-| user_id | UUID FK | 所属用户 |
-| title | VARCHAR | 列表显示名，如「前端岗」 |
-| content | JSONB | 简历全文 |
-| created_at | TIMESTAMPTZ | 创建时间 |
-| updated_at | TIMESTAMPTZ | 更新时间 |
+### `content` JSON 结构 ⚠️
 
-### `content` JSON 结构
+与规格示例大体一致，差异：
+
+| 字段 | 规格 | 实际 | 状态 |
+|------|------|------|------|
+| `theme.backgroundColor` | 平面色 | 仍兼容；主推 `gradient` + `accent` + `heroTone` | ⚠️ |
+| `theme` | 仅 backgroundColor | `ResumeTheme` 含渐变、强调色、页眉文字色 | ⚠️ |
+| `basics.fields.avatar` | 未提及 | base64 头像字段 | 🆕 |
+| `type: skills` | 技能标签 | 已改为 **`certificates`**（证书） | ⚠️ 破坏性变更 |
+| `description` / `content` | 纯文本 | 富文本 HTML（TipTap） | 🆕 |
 
 ```json
 {
   "template": "default",
   "theme": {
-    "backgroundColor": "#ffffff"
+    "gradient": "linear-gradient(...)",
+    "accent": "#5b5bd6",
+    "heroTone": "light"
   },
-  "sections": [
-    {
-      "id": "basics",
-      "type": "basics",
-      "fields": {
-        "name": "张三",
-        "title": "前端工程师",
-        "email": "zhang@example.com",
-        "phone": "138xxxx",
-        "location": "北京"
-      }
-    },
-    {
-      "id": "work-1",
-      "type": "work",
-      "items": [
-        {
-          "id": "work-item-1",
-          "company": "字节跳动",
-          "position": "高级工程师",
-          "startDate": "2021-01",
-          "endDate": "",
-          "description": "负责..."
-        }
-      ]
-    },
-    {
-      "id": "edu-1",
-      "type": "education",
-      "items": [
-        {
-          "id": "edu-item-1",
-          "school": "清华大学",
-          "degree": "本科",
-          "startDate": "2015-09",
-          "endDate": "2019-06"
-        }
-      ]
-    },
-    {
-      "id": "skills-1",
-      "type": "skills",
-      "items": [
-        { "id": "skill-1", "name": "React" },
-        { "id": "skill-2", "name": "TypeScript" }
-      ]
-    },
-    {
-      "id": "custom-1",
-      "type": "custom",
-      "title": "证书",
-      "items": [
-        { "id": "custom-item-1", "content": "PMP 认证" }
-      ]
-    }
-  ]
+  "sections": [ "basics", "work", "education", "certificates", "custom..." ]
 }
 ```
 
 ### 区块规则
 
-- `basics`：固定存在，单条 `fields`，不可删除
-- `work` / `education` / `skills`：固定类型，可增删 `items`，第一版各保留一个 section 容器，不可删除整个 section
-- `custom`：可整节增删，标题用户自定义
-- 所有 `id` 前端用 `crypto.randomUUID()` 生成
+| 规则 | 状态 |
+|------|------|
+| `basics` 固定、不可删 | ✅ |
+| `work` / `education` 可增删 items，section 容器不可删 | ✅ |
+| ~~`skills`~~ → `certificates` | ⚠️ 类型已替换 |
+| `custom` 可整节增删、标题自定义 | ✅ |
+| `id` 用 `crypto.randomUUID()` | ✅ `createId()` |
+| 区块顺序用户可拖拽 | 🆕 `reorderResumeSections()`，顺序同步 PDF |
 
-### 预设背景色
+### 预设背景色 ⚠️
 
-`#ffffff`（白）、`#f5f5f5`（浅灰）、`#f0f4f8`（浅蓝）、`#faf8f5`（米色）、`#f8f5ff`（浅紫）
+规格 5 色平面背景 → 实际 **10 套渐变页眉预设**（`THEME_PRESETS`：`indigo-dusk`、`wine-rose` 等）。
 
 ## API 接口
 
-| 方法 | 路径 | 说明 | 鉴权 |
+| 方法 | 路径 | 状态 | 备注 |
 |------|------|------|------|
-| POST | `/api/auth/login` | `{username, password}` → `{token, user}` | 否 |
-| POST | `/api/auth/logout` | 前端清除 token 即可 | 否 |
-| GET | `/api/auth/me` | 当前用户信息 | Bearer JWT |
-| GET | `/api/resumes` | 当前用户简历列表 | Bearer JWT |
-| POST | `/api/resumes` | 创建空简历 `{title}` | Bearer JWT |
-| GET | `/api/resumes/:id` | 获取完整 content | Bearer JWT |
-| PATCH | `/api/resumes/:id` | 更新 `{title?, content?}` | Bearer JWT |
-| DELETE | `/api/resumes/:id` | 删除简历 | Bearer JWT |
-| POST | `/api/resumes/:id/export` | 返回 PDF 文件流 | Bearer JWT |
+| POST | `/api/auth/login` | ✅ | |
+| POST | `/api/auth/logout` | ✅ | 仅前端清 token |
+| GET | `/api/auth/me` | ✅ | |
+| GET | `/api/resumes` | ✅ | |
+| POST | `/api/resumes` | ✅ | |
+| GET | `/api/resumes/:id` | ✅ | |
+| PATCH | `/api/resumes/:id` | ✅ | 整份 content 全量替换 |
+| DELETE | `/api/resumes/:id` | ✅ | |
+| POST | `/api/resumes/:id/export` | ✅ | 返回 PDF 流 |
 
-所有 resume 操作校验 `user_id` 归属，跨用户访问返回 403。
+`user_id` 归属校验 → 403 ✅ `handler/resume.go`
 
-### PATCH 策略
+### PATCH 策略 ✅
 
-第一版整份 `content` 全量替换（前端 1s 防抖后发送），简单可靠。后续可改为 JSON Patch 优化带宽。
+1s 防抖全量 PATCH，与规格一致。`useAutoSave.ts`
 
-## PDF 导出
+## PDF 导出 ⚠️
 
-### 主方案：chromedp
+### 主方案：chromedp ✅
 
 ```
 POST /api/resumes/:id/export
-  → 读取 content JSON
-  → Go html/template 渲染 HTML（与前端视觉一致）
-  → chromedp 无头 Chrome 打印为 A4 PDF
-  → 返回 application/pdf
+  → content JSON
+  → Go text/template 渲染 resume.html
+  → chromedp PrintToPDF
+  → application/pdf
 ```
 
-| 项 | 决定 |
-|----|------|
-| 纸张 | A4，边距 20mm |
-| 样式 | 导出专用 CSS，与编辑器画布一致 |
-| 背景色 | 应用 `theme.backgroundColor` |
-| 字体 | Noto Sans SC 或系统安全字体 |
+| 项 | 规格 | 实际 | 状态 |
+|----|------|------|------|
+| 纸张 | A4，边距 20mm | A4 **零边距**，`resume-canvas` 铺满 | ⚠️ |
+| 样式 | 导出 CSS 与编辑器一致 | 共享 `export/resume-canvas.css` + `print.css` | ✅ |
+| 背景/主题 | `theme.backgroundColor` | `resolveThemeStyle()` CSS 变量 + 渐变 | ⚠️ |
+| 字体 | Noto Sans SC | LXGW WenKai（霞鹜文楷）+ 等待 `document.fonts` | ⚠️ |
+| 联系方式图标 | 未单独说明 | 已补 SVG（邮箱/电话/地址） | ✅ |
+| 富文本 HTML | 未提及 | `formatBody` 渲染，非转义 | ✅ |
+| 区块顺序 | 未提及 | 跟随 `sections` 数组顺序 | 🆕 |
+| Docker Chromium | 需要 | 需本机/镜像安装 Chrome | ⚠️ |
 
-Docker 镜像需安装 Chromium。
+实现文件：`internal/pdf/generator.go`、`templates/resume.html`、`templates/export/*`
 
-### 降级方案
+### 降级方案 ❌
 
-前端 `window.print()` + 打印样式表，仅作开发备选，不作为主路径。
+前端 `window.print()` 未实现。
 
-## 项目结构
+## 项目结构 ✅
 
-```
-resume-builder/
-├── pnpm-workspace.yaml
-├── package.json
-├── docker-compose.yml
-├── apps/
-│   ├── web/
-│   │   ├── src/
-│   │   │   ├── pages/          # Login, ResumeList, Editor
-│   │   │   ├── components/
-│   │   │   │   ├── editor/     # ResumeCanvas, SectionBlock, Toolbar
-│   │   │   │   └── ui/
-│   │   │   ├── templates/      # default.tsx
-│   │   │   ├── hooks/          # useAutoSave, useAuth
-│   │   │   ├── api/            # fetch 封装（自动带 Bearer token）
-│   │   │   └── types/
-│   │   └── package.json
-│   └── server/
-│       ├── cmd/server/main.go
-│       ├── internal/
-│       │   ├── handler/
-│       │   ├── service/
-│       │   ├── repository/
-│       │   ├── model/
-│       │   ├── middleware/     # JWT 鉴权（解析 Authorization header）
-│       │   └── pdf/
-│       ├── templates/            # PDF HTML 模板
-│       ├── migrations/
-│       └── go.mod
-└── docs/
-    └── superpowers/specs/
-```
+与规格基本一致，额外：
+
+- `apps/web/src/data/sampleMachao.ts` — 示例数据 🆕
+- `apps/web/src/components/editor/SortableSections.tsx` — 拖拽排序 🆕
+- `apps/web/src/components/ui/InlineRichText.tsx` — 富文本 🆕
+- `apps/web/src/components/resume/AvatarUpload.tsx` — 头像 🆕
+- `apps/server/templates/export/` — PDF 专用 CSS  bundle
 
 ## MVP 交付范围
 
 ### 包含
 
-- 账号密码登录（DB 预置账号，JWT 存 localStorage）
-- 简历列表：新建、删除、切换
-- 编辑器：内联编辑、区块条目增删复制、自定义区块、背景色切换
-- 1 个 `default` 模板
-- 自动保存（1s 防抖）
-- 服务端 PDF 导出
-- Docker Compose 本地一键启动
+| 功能 | 状态 |
+|------|------|
+| 账号密码登录（DB 预置，JWT localStorage） | ✅ |
+| 简历列表：新建、删除、切换 | ✅ |
+| 编辑器：内联编辑、条目增删复制、自定义区块 | ✅ |
+| 背景/页眉配色切换 | ⚠️ 渐变预设，非平面 5 色 |
+| 1 个 `default` 模板 | ✅ |
+| 自动保存（1s 防抖） | ✅ |
+| 服务端 PDF 导出 | ✅ |
+| Docker Compose 本地一键启动 | ⚠️ 仅数据库容器 |
 
-### 不包含（后续迭代）
+### 不包含（后续迭代）— 实际对照
 
-- 用户注册 / 管理后台
-- 多模板切换
-- 拖拽排序区块
-- 富文本（加粗、斜体等）
-- 历史版本 / 撤销重做
-- 简历分享链接
-- JWT 刷新 Token / 黑名单
+| 功能 | 规格 | 实际 |
+|------|------|------|
+| 用户注册 / 管理后台 | ❌ 不包含 | ❌ 未实现 |
+| 多模板切换 | ❌ 不包含 | ❌ 仅 `default` |
+| 拖拽排序区块 | ❌ 不包含 | 🆕 **已实现** |
+| 富文本（加粗、斜体等） | ❌ 不包含 | 🆕 **已实现**（TipTap） |
+| 历史版本 / 撤销重做 | ❌ 不包含 | ❌ 未实现 |
+| 简历分享链接 | ❌ 不包含 | ❌ 未实现 |
+| JWT 刷新 / 黑名单 | ❌ 不包含 | ❌ 未实现 |
+
+### 规格未列、已实现的其他功能 🆕
+
+- 头像上传与 WASM 压缩（`AvatarUpload.tsx`、`compressImage.ts`）
+- 证书区块（替代技能 `skills`）
+- 页眉渐变 + 多预设主题 + 深浅文字自适应
+- 导出 loading 遮罩、防重复点击
+- 「加载马超示例」一键填充
 
 ## 错误处理
 
-| 场景 | 行为 |
-|------|------|
-| 401 未认证 / Token 过期 | 清除 localStorage，跳转登录页 |
-| 403 无权访问 | Toast 提示「无权访问」 |
-| 保存失败 | 右上角显示「保存失败」，保留本地编辑状态，可重试 |
-| PDF 导出失败 | Toast 提示错误信息 |
-| 网络断开 | 编辑器仍可编辑，恢复网络后自动重试保存 |
+| 场景 | 规格 | 状态 |
+|------|------|------|
+| 401 / Token 过期 | 清 localStorage，跳转登录 | ✅ `api/client.ts` |
+| 403 无权访问 | Toast「无权访问」 | ⚠️ 后端有文案，前端无专用 Toast |
+| 保存失败 | 右上角「保存失败」，保留本地状态 | ✅ |
+| PDF 导出失败 | Toast 提示 | ⚠️ 使用 `alert()` |
+| 网络断开 → 恢复后自动重试保存 | 自动重试 | ❌ 未实现 |
+
+---
+
+## 待办 / 与规格差距（优先级参考）
+
+1. ❌ `skills` 与 `certificates` 规格文档同步（或恢复兼容）
+2. ⚠️ Docker Compose 补齐 server + web + Chromium
+3. ❌ 离线保存重试、403/PDF 错误 Toast 化
+4. ❌ 多模板、分享链接、版本历史（仍属后续迭代）
+5. ⚠️ 数据库迁移工具（goose / golang-migrate）替代纯 SQL 挂载
