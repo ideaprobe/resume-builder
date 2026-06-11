@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { exportResumePdf, fetchResume, updateResume } from '../api/resumes'
 import { Toolbar } from '../components/editor/Toolbar'
+import { IconRedo, IconUndo } from '../components/ui/UndoRedoIcons'
 import { SaveFlushProvider } from '../context/SaveFlushContext'
 import { ResumeTemplate, type ResumeTemplateId } from '../templates'
 import { useAutoSave } from '../hooks/useAutoSave'
@@ -175,26 +176,30 @@ export function EditorPage() {
           />
         </div>
         <div className="flex-none items-center flex gap-2 sm:gap-3">
-          <div className="join">
+          <div
+            className="inline-flex h-8 items-stretch overflow-hidden rounded-lg border border-base-300 bg-base-100 divide-x divide-base-300"
+            role="group"
+            aria-label="编辑历史"
+          >
             <button
               type="button"
-              className="btn btn-ghost btn-sm join-item px-2.5"
+              className="inline-flex w-8 shrink-0 items-center justify-center text-base-content/65 hover:bg-base-200 hover:text-base-content disabled:cursor-not-allowed disabled:text-base-content/25 disabled:hover:bg-transparent transition-colors"
               disabled={exporting || !canUndo}
               onClick={undo}
               title="撤销 (Ctrl+Z)"
               aria-label="撤销"
             >
-              ↶
+              <IconUndo />
             </button>
             <button
               type="button"
-              className="btn btn-ghost btn-sm join-item px-2.5"
+              className="inline-flex w-8 shrink-0 items-center justify-center text-base-content/65 hover:bg-base-200 hover:text-base-content disabled:cursor-not-allowed disabled:text-base-content/25 disabled:hover:bg-transparent transition-colors"
               disabled={exporting || !canRedo}
               onClick={redo}
               title="重做 (Ctrl+Shift+Z)"
               aria-label="重做"
             >
-              ↷
+              <IconRedo />
             </button>
           </div>
           {!exporting &&

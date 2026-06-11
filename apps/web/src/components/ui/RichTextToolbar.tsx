@@ -1,6 +1,7 @@
 import type { Editor } from '@tiptap/react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { FONT_SIZE_OPTIONS } from './fontSizeExtension'
+import { IconRedo, IconUndo } from './UndoRedoIcons'
 
 const TEXT_COLORS = ['#1e1e2f', '#4b4b63', '#5b5bd6', '#be123c', '#0369a1', '#0d9488'] as const
 const HIGHLIGHT_COLORS = ['#fef9c3', '#dcfce7', '#dbeafe', '#fce7f3', '#ffedd5'] as const
@@ -136,14 +137,14 @@ export function RichTextToolbar({ editor }: { editor: Editor }) {
           disabled={!editor.can().undo()}
           onMouseDown={() => editor.chain().focus().undo().run()}
         >
-          <IconUndo />
+          <IconUndo size={15} />
         </ToolbarButton>
         <ToolbarButton
           title="重做"
           disabled={!editor.can().redo()}
           onMouseDown={() => editor.chain().focus().redo().run()}
         >
-          <IconRedo />
+          <IconRedo size={15} />
         </ToolbarButton>
       </ToolbarGroup>
 
@@ -308,24 +309,6 @@ export function RichTextToolbar({ editor }: { editor: Editor }) {
         </ToolbarButton>
       </ToolbarGroup>
     </div>
-  )
-}
-
-function IconUndo() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M3 7v6h6" />
-      <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6.36 2.64L3 13" />
-    </svg>
-  )
-}
-
-function IconRedo() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M21 7v6h-6" />
-      <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6.36 2.64L21 13" />
-    </svg>
   )
 }
 
